@@ -1,9 +1,4 @@
 #include "Game.h"
-#include "TextureManager.h"
-#include "GameObject.h"
-
-GameObject* skeleton;
-GameObject* skeleton2;
 
 Game::Game() 
 {
@@ -26,30 +21,27 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	{
 		std::cout << "Subsystems Initialiased!...\n";
 
-		m_window = SDL_CreateWindow(title, xPos, yPos, width, height, flags);
+		window = SDL_CreateWindow(title, xPos, yPos, width, height, flags);
 
-		if (m_window)
+		if (window)
 		{
 			std::cout << "Window created!\n";
 		}
 
-		m_renderer = SDL_CreateRenderer(m_window, -1, 0);
+		renderer = SDL_CreateRenderer(window, -1, 0);
 
-		if (m_renderer)
+		if (renderer)
 		{
-			SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 			std::cout << "Renderer created!\n";
 		}
 
-		m_isRunning = true;
+		isRunning = true;
 	}
 	else
 	{
-		m_isRunning = false;
+		isRunning = false;
 	}
-
-	skeleton = new GameObject("Assets/Idle.png", m_renderer, 0, 0);
-	skeleton2 = new GameObject("Assets/Idle.png", m_renderer, 50, 50);
 }
 
 void Game::handleEvents()
@@ -60,7 +52,7 @@ void Game::handleEvents()
 	switch (event.type)
 	{
 	case SDL_QUIT:
-		m_isRunning = false;
+		isRunning = false;
 		break;
 
 	default:
@@ -70,22 +62,19 @@ void Game::handleEvents()
 
 void Game::update()
 {
-	skeleton->Update();
-	skeleton2->Update();
 }
 
 void Game::render()
 {
-	SDL_RenderClear(m_renderer);
-	skeleton->Render();
-	skeleton2->Render();
-	SDL_RenderPresent(m_renderer);
+	SDL_RenderClear(renderer);
+
+	SDL_RenderPresent(renderer);
 }
 
 void Game::clean()
 {
-	SDL_DestroyWindow(m_window);
-	SDL_DestroyRenderer(m_renderer);
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
 	SDL_Quit;
 	std::cout << "Game Cleaned\n";
 }
