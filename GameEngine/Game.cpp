@@ -1,4 +1,9 @@
 #include "Game.h"
+#include "TextureManager.h"
+
+SDL_Texture* skeletonTex;
+SDL_Rect srcRect;
+SDL_Rect destRect;
 
 Game::Game() 
 {
@@ -42,6 +47,8 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	{
 		m_isRunning = false;
 	}
+
+	skeletonTex = TextureManager::LoadTexture("Assets/Idle.png", m_renderer);
 }
 
 void Game::handleEvents()
@@ -62,12 +69,17 @@ void Game::handleEvents()
 
 void Game::update()
 {
+	destRect.h = 128;
+	destRect.w = 128;
+
+	srcRect.h = 128;
+	srcRect.w = 128;
 }
 
 void Game::render()
 {
 	SDL_RenderClear(m_renderer);
-
+	SDL_RenderCopy(m_renderer, skeletonTex, &srcRect, &destRect);
 	SDL_RenderPresent(m_renderer);
 }
 
