@@ -15,7 +15,7 @@ Game::~Game()
 {
 }
 
-void Game::Init(const char* title, int xPos, int yPos, int width, int height, bool isFullscreen)
+void Game::init(const char* title, int xPos, int yPos, int width, int height, bool isFullscreen)
 {
 	int flags = 0;
 
@@ -54,7 +54,7 @@ void Game::Init(const char* title, int xPos, int yPos, int width, int height, bo
 	skeletonArcher = new GameObject("Assets/Skeleton_Archer/Idle.png", 100, 100);
 }
 
-void Game::HandleEvents()
+void Game::handleEvents()
 {
 	SDL_Event event;
 	SDL_PollEvent(&event);
@@ -70,13 +70,13 @@ void Game::HandleEvents()
 	}
 }
 
-void Game::Update()
+void Game::update()
 {
 	skeleton->Update();
 	skeletonArcher->Update();
 }
 
-void Game::Render()
+void Game::render()
 {
 	SDL_RenderClear(m_renderer);
 	skeleton->Render();
@@ -84,7 +84,7 @@ void Game::Render()
 	SDL_RenderPresent(m_renderer);
 }
 
-void Game::Clean()
+void Game::clean()
 {
 	SDL_DestroyWindow(m_window);
 	SDL_DestroyRenderer(m_renderer);
