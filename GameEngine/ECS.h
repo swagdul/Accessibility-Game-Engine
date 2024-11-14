@@ -20,7 +20,7 @@ inline ComponentID getComponentTypeID()
 template <typename T> inline ComponentID getComponentTypeID() noexcept
 {
 	static ComponentID typeID = getComponentTypeID();
-	return typeID();
+	return typeID;
 }
 
 constexpr std::size_t maxComponents = 32;
@@ -59,19 +59,19 @@ public:
 
 	template <typename T> bool hasComponent() const
 	{
-		return componentBitSet[getComponentID<T>];
+		return m_componentBitSet[getComponentTypeID<T>];
 	}
 
 	template <typename T, typename... TArgs> 
 	T& addComponent(TArgs&&... mArgs)
 	{
 		T* c(new T(std::forward<TArgs>(mArgs)...));
-		c->entity = this;
+		c->m_entity = this;
 		std::unique_ptr<Component> uPtr{ c };
-		components.emplace_back(std::move(uPtr));
+		m_components.emplace_back(std::move(uPtr));
 
-		componentArray[getComponentTypeID<T>()] = c;
-		componentBitSet[getComponentTypeID<T>()] = true;
+		m_componentArray[getComponentTypeID<T>()] = c;
+		m_componentBitSet[getComponentTypeID<T>()] = true;
 
 		c->init();
 		return *c;
@@ -79,7 +79,7 @@ public:
 
 	template <typename T> T& getComponent() const
 	{
-		auto ptr(componentArray[getComponentTypeID<T>()]);
+		auto ptr(m_componentArray[getComponentTypeID<T>()]);
 		return *static_cast<T*>(ptr);
 	}
 
@@ -88,7 +88,7 @@ private:
 	std::vector<std::unique_ptr<Component>> m_components;
 
 	ComponentArray m_componentArray;
-	ComponentBitSet componentBitSet;
+	ComponentBitSet m_componentBitSet;
 };
 
 class Manager
@@ -99,7 +99,7 @@ public:
 		for (auto& e : m_entites) e->update();
 	}
 
-	void update()
+	void draw()
 	{
 		for (auto& e : m_entites) e->draw();
 	}
