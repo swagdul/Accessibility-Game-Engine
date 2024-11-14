@@ -1,11 +1,6 @@
 #include "Game.h"
 #include "TextureManager.h"
-#include "GameObject.h"
-#include "ECS.h"
-#include "PositionComponent.h"
-
-GameObject* skeleton;
-GameObject* skeletonArcher;
+#include "Components.h"
 
 SDL_Renderer* Game::m_renderer = nullptr;
 
@@ -55,9 +50,6 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	skeleton = new GameObject("Assets/Skeleton/Idle.png", 0, 0);
-	skeletonArcher = new GameObject("Assets/Skeleton_Archer/Idle.png", 100, 100);
-
 	newEnemy.addComponent<PositionComponent>();
 }
 
@@ -79,16 +71,13 @@ void Game::handleEvents()
 
 void Game::update()
 {
-	skeleton->Update();
-	skeletonArcher->Update();
 	manager.update();
 }
 
 void Game::render()
 {
 	SDL_RenderClear(m_renderer);
-	skeleton->Render();
-	skeletonArcher->Render();
+
 	SDL_RenderPresent(m_renderer);
 }
 

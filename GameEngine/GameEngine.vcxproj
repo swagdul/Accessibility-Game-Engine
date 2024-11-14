@@ -147,6 +147,7 @@
     <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components.h" />
     <ClInclude Include="PositionComponent.h" />
     <ClInclude Include="ECS.h" />
     <ClInclude Include="Game.h" />
