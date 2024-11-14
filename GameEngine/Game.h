@@ -9,17 +9,18 @@ public:
 	Game();
 	~Game();
 
-	void init(const char* title, int xPos, int yPos, int width, int height, bool isFullscreen);
+	void Init(const char* title, int xPos, int yPos, int width, int height, bool isFullscreen);
 	
-	void handleEvents();
-	void update();
-	bool isRunning() { return m_isRunning; }
-	void render();
-	void clean();
+	void HandleEvents();
+	void Update();
+	bool IsRunning() { return m_isRunning; }
+	void Render();
+	void Clean();
+
+	static SDL_Renderer* m_renderer;
 
 private:
 	bool m_isRunning = false;
 	SDL_Window* m_window;
-	SDL_Renderer* m_renderer;
 };
 

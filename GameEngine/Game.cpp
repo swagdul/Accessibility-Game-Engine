@@ -1,9 +1,11 @@
 #include "Game.h"
 #include "TextureManager.h"
+#include "GameObject.h"
 
-SDL_Texture* skeletonTex;
-SDL_Rect srcRect;
-SDL_Rect destRect;
+GameObject* skeleton;
+GameObject* skeletonArcher;
+
+SDL_Renderer* Game::m_renderer = nullptr;
 
 Game::Game() 
 {
@@ -13,7 +15,7 @@ Game::~Game()
 {
 }
 
-void Game::init(const char* title, int xPos, int yPos, int width, int height, bool isFullscreen)
+void Game::Init(const char* title, int xPos, int yPos, int width, int height, bool isFullscreen)
 {
 	int flags = 0;
 
@@ -48,10 +50,11 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	skeletonTex = TextureManager::LoadTexture("Assets/Idle.png", m_renderer);
+	skeleton = new GameObject("Assets/Skeleton/Idle.png", 0, 0);
+	skeletonArcher = new GameObject("Assets/Skeleton_Archer/Idle.png", 100, 100);
 }
 
-void Game::handleEvents()
+void Game::HandleEvents()
 {
 	SDL_Event event;
 	SDL_PollEvent(&event);
@@ -67,23 +70,21 @@ void Game::handleEvents()
 	}
 }
 
-void Game::update()
+void Game::Update()
 {
-	destRect.h = 128;
-	destRect.w = 128;
-
-	srcRect.h = 128;
-	srcRect.w = 128;
+	skeleton->Update();
+	skeletonArcher->Update();
 }
 
-void Game::render()
+void Game::Render()
 {
 	SDL_RenderClear(m_renderer);
-	SDL_RenderCopy(m_renderer, skeletonTex, &srcRect, &destRect);
+	skeleton->Render();
+	skeletonArcher->Render();
 	SDL_RenderPresent(m_renderer);
 }
 
-void Game::clean()
+void Game::Clean()
 {
 	SDL_DestroyWindow(m_window);
 	SDL_DestroyRenderer(m_renderer);
