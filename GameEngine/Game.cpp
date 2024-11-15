@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "TextureManager.h"
 #include "Components.h"
+#include "Vector2D.h"
 
 Manager manager;
 
@@ -51,7 +52,7 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	skeleton.addComponent<PositionComponent>(100, 500);
+	skeleton.addComponent<TransformComponent>();
 	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
 }
 
