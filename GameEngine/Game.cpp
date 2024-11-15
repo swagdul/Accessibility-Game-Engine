@@ -3,11 +3,12 @@
 #include "Components.h"
 #include "Vector2D.h"
 
-Manager manager;
+Manager g_manager;
 
 SDL_Renderer* Game::m_renderer = nullptr;
+SDL_Event Game::m_event;
 
-auto& skeleton(manager.addEntity());
+auto& skeleton(g_manager.addEntity());
 
 Game::Game() 
 {
@@ -54,14 +55,14 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 
 	skeleton.addComponent<TransformComponent>();
 	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
+	skeleton.addComponent<KeyboardController>();
 }
 
 void Game::handleEvents()
 {
-	SDL_Event event;
-	SDL_PollEvent(&event);
+	SDL_PollEvent(&m_event);
 
-	switch (event.type)
+	switch (m_event.type)
 	{
 	case SDL_QUIT:
 		m_isRunning = false;
@@ -74,14 +75,14 @@ void Game::handleEvents()
 
 void Game::update()
 {
-	manager.refresh();
-	manager.update();
+	g_manager.refresh();
+	g_manager.update();
 }
 
 void Game::render()
 {
 	SDL_RenderClear(m_renderer);
- 	manager.draw();
+ 	g_manager.draw();
 	SDL_RenderPresent(m_renderer);
 }
 

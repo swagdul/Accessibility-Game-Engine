@@ -18,6 +18,7 @@ public:
 	void clean();
 
 	static SDL_Renderer* m_renderer;
+	static SDL_Event m_event;
 
 private:
 	bool m_isRunning = false;
