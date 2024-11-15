@@ -50,5 +50,8 @@
     <ClInclude Include="Components.h">
       <Filter>ECS</Filter>
     </ClInclude>
+    <ClInclude Include="SpriteComponent.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

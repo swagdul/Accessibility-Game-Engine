@@ -4,6 +4,18 @@
 class PositionComponent : public Component
 {
 public:
+	PositionComponent()
+	{
+		m_xPos = 0;
+		m_yPos = 0;
+	}
+
+	PositionComponent(int xPos, int yPos)
+	{
+		m_xPos = xPos;
+		m_yPos = yPos;
+	}
+
 	int getxPos() { return m_xPos; }
 	int getyPos() { return m_yPos; }
 

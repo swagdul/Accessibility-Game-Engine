@@ -2,10 +2,11 @@
 #include "TextureManager.h"
 #include "Components.h"
 
+Manager manager;
+
 SDL_Renderer* Game::m_renderer = nullptr;
 
-Manager manager;
-auto& newEnemy(manager.addEntity());
+auto& skeleton(manager.addEntity());
 
 Game::Game() 
 {
@@ -50,7 +51,8 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	newEnemy.addComponent<PositionComponent>();
+	skeleton.addComponent<PositionComponent>(100, 500);
+	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
 }
 
 void Game::handleEvents()
@@ -71,13 +73,14 @@ void Game::handleEvents()
 
 void Game::update()
 {
+	manager.refresh();
 	manager.update();
 }
 
 void Game::render()
 {
 	SDL_RenderClear(m_renderer);
-
+ 	manager.draw();
 	SDL_RenderPresent(m_renderer);
 }
 
