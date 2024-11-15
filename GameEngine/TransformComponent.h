@@ -17,8 +17,7 @@ public:
 
 	TransformComponent()
 	{
-		m_position.m_x = 0.0f;
-		m_position.m_y = 0.0f;
+		m_position.Zero();
 	}
 
 	TransformComponent(float xPos, float yPos, int scale)
@@ -30,8 +29,7 @@ public:
 
 	TransformComponent(int scale)
 	{
-		m_position.m_x = 0.0f;
-		m_position.m_y = 0.0f;
+		m_position.Zero();
 		m_scale = scale;
 	}
 

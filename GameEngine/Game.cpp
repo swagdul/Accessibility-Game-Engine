@@ -88,6 +88,7 @@ void Game::update()
 	if (Collision::AABB(skeleton.getComponent<ColliderComponent>().m_collider, 
 		skeletonArcher.getComponent<ColliderComponent>().m_collider))
 	{
+		skeleton.getComponent<TransformComponent>().m_velocity * -1;
 		std::cout << "Collision!\n";
 	}
 }

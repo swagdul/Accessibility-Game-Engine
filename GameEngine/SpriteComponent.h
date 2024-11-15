@@ -34,11 +34,10 @@ public:
 
 	void update() override
 	{
-		m_destRect.x = (int)m_transform->m_position.m_x;
-		m_destRect.y = (int)m_transform->m_position.m_y;
+		m_destRect.x = static_cast<int>(m_transform->m_position.m_x);
+		m_destRect.y = static_cast<int>(m_transform->m_position.m_y);
 		m_destRect.w = m_transform->m_width * m_transform->m_scale;
 		m_destRect.h = m_transform->m_height * m_transform->m_scale;
-		
 	}
 
 	void draw() override
