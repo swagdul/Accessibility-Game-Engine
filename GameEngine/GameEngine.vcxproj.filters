@@ -44,7 +44,7 @@
     <ClInclude Include="ECS.h">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="PositionComponent.h">
+    <ClInclude Include="TransformComponent.h">
       <Filter>ECS</Filter>
     </ClInclude>
     <ClInclude Include="Components.h">

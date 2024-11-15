@@ -1,16 +1,16 @@
 #pragma once
 #include "ECS.h"
 
-class PositionComponent : public Component
+class TransformComponent : public Component
 {
 public:
-	PositionComponent()
+	TransformComponent()
 	{
 		m_xPos = 0;
 		m_yPos = 0;
 	}
 
-	PositionComponent(int xPos, int yPos)
+	TransformComponent(int xPos, int yPos)
 	{
 		m_xPos = xPos;
 		m_yPos = yPos;
