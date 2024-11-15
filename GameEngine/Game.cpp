@@ -9,6 +9,7 @@ SDL_Renderer* Game::m_renderer = nullptr;
 SDL_Event Game::m_event;
 
 auto& skeleton(g_manager.addEntity());
+auto& skeletonArcher(g_manager.addEntity());
 
 Game::Game() 
 {
@@ -53,9 +54,14 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	skeleton.addComponent<TransformComponent>();
+	skeleton.addComponent<TransformComponent>(2);
 	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
 	skeleton.addComponent<KeyboardController>();
+	skeleton.addComponent<ColliderComponent>("Skeleton");
+
+	skeletonArcher.addComponent<TransformComponent>(300.0f, 300.0f, 2);
+	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png");
+	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
 }
 
 void Game::handleEvents()
@@ -77,6 +83,7 @@ void Game::update()
 {
 	g_manager.refresh();
 	g_manager.update();
+
 }
 
 void Game::render()

@@ -53,13 +53,12 @@ public:
 		for (auto& c : m_components) c->draw();
 	}
 
-
 	bool isActive() const { return m_active; }
 	void destroy() { m_active = false; }
 
 	template <typename T> bool hasComponent() const
 	{
-		return m_componentBitSet[getComponentTypeID<T>];
+		return m_componentBitSet[getComponentTypeID<T>()];
 	}
 
 	template <typename T, typename... TArgs> 

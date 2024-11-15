@@ -13,6 +13,11 @@ public:
 	{
 		setTexture(filePath);
 	}
+
+	~SpriteComponent()
+	{
+		SDL_DestroyTexture(m_texture);
+	}
 	
 	void setTexture(const char* filePath)
 	{
@@ -23,7 +28,7 @@ public:
 	{
 		m_transform = &m_entity->getComponent<TransformComponent>();
 
-		m_srcRect = { 0, 0, 128, 128 };
+		m_srcRect = { 0, 0, m_transform->m_width, m_transform->m_height };
 		m_destRect = { 64, 64, 128, 128 };
 	}
 
@@ -31,6 +36,9 @@ public:
 	{
 		m_destRect.x = (int)m_transform->m_position.m_x;
 		m_destRect.y = (int)m_transform->m_position.m_y;
+		m_destRect.w = m_transform->m_width * m_transform->m_scale;
+		m_destRect.h = m_transform->m_height * m_transform->m_scale;
+		
 	}
 
 	void draw() override
