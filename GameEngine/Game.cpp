@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include "Components.h"
 #include "Vector2D.h"
+#include "Collision.h"
 
 Manager g_manager;
 
@@ -84,6 +85,11 @@ void Game::update()
 	g_manager.refresh();
 	g_manager.update();
 
+	if (Collision::AABB(skeleton.getComponent<ColliderComponent>().m_collider, 
+		skeletonArcher.getComponent<ColliderComponent>().m_collider))
+	{
+		std::cout << "Collision!\n";
+	}
 }
 
 void Game::render()
