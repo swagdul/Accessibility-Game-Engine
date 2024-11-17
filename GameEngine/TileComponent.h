@@ -38,7 +38,7 @@ public:
 
 	void init() override
 	{
-		m_entity->addComponent<TransformComponent>(m_tileRect.x, m_tileRect.y, m_tileRect.w, m_tileRect.h, 1);
+		m_entity->addComponent<TransformComponent>((float)m_tileRect.x, (float)m_tileRect.y, m_tileRect.w, m_tileRect.h, 1);
 		m_transform = &m_entity->getComponent<TransformComponent>();
 
 		m_entity->addComponent<SpriteComponent>();
