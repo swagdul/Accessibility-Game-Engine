@@ -9,6 +9,8 @@ Manager g_manager;
 SDL_Renderer* Game::m_renderer = nullptr;
 SDL_Event Game::m_event;
 
+std::vector<ColliderComponent*> Game::m_colliders;
+
 auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
 
