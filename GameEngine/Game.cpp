@@ -3,6 +3,7 @@
 #include "Components.h"
 #include "Vector2D.h"
 #include "Collision.h"
+#include "Map.h"
 
 Manager g_manager;
 
@@ -13,6 +14,7 @@ std::vector<ColliderComponent*> Game::m_colliders;
 
 auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
+auto& player(g_manager.addEntity());
 
 Game::Game() 
 {
@@ -57,14 +59,20 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	skeleton.addComponent<TransformComponent>(2);
-	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
-	skeleton.addComponent<KeyboardController>();
-	skeleton.addComponent<ColliderComponent>("Skeleton");
+	//Map::LoadMap();
 
-	skeletonArcher.addComponent<TransformComponent>(300.0f, 300.0f, 2);
+	skeleton.addComponent<TransformComponent>(3);
+	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
+	skeleton.addComponent<ColliderComponent>("Skeleton");	
+
+	skeletonArcher.addComponent<TransformComponent>(300.0f, 300.0f, 3);
 	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png");
 	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
+
+	player.addComponent<TransformComponent>(2);
+	player.addComponent<SpriteComponent>("Assets/Shinobi/Idle.png");
+	player.addComponent<KeyboardController>();
+	player.addComponent<ColliderComponent>("Skeleton");
 }
 
 void Game::handleEvents()
@@ -87,11 +95,9 @@ void Game::update()
 	g_manager.refresh();
 	g_manager.update();
 
-	if (Collision::AABB(skeleton.getComponent<ColliderComponent>().m_collider, 
-		skeletonArcher.getComponent<ColliderComponent>().m_collider))
+	for (auto collider : m_colliders)
 	{
-		skeleton.getComponent<TransformComponent>().m_velocity * -1;
-		std::cout << "Collision!\n";
+		Collision::AABB(player.getComponent<ColliderComponent>(), *collider);
 	}
 }
 
@@ -108,5 +114,11 @@ void Game::clean()
 	SDL_DestroyRenderer(m_renderer);
 	SDL_Quit;
 	std::cout << "Game Cleaned\n";
+}
+
+void Game::AddTile(int id, int xPos, int yPos)
+{
+	auto& tile(g_manager.addEntity());
+	tile.addComponent<TileComponent>(xPos, yPos, 32, 32, id);
 }
 
