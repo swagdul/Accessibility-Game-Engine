@@ -71,18 +71,18 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	//Map::LoadMap();
 
 	skeleton.addComponent<TransformComponent>(3);
-	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png", 7, 100);
+	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
 	skeleton.addComponent<ColliderComponent>("Skeleton");
 	skeleton.addGroup(Enemies);
 
 
 	skeletonArcher.addComponent<TransformComponent>(300.0f, 200.0f, 3);
-	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png", 7, 100);
+	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png");
 	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
 	skeletonArcher.addGroup(Enemies);
 
 	player.addComponent<TransformComponent>(2);
-	player.addComponent<SpriteComponent>("Assets/Shinobi/Idle.png", 6, 100);
+	player.addComponent<SpriteComponent>("Assets/Shinobi/Shinobi_Animations.png", true);
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Skeleton");
 	player.addGroup(Players);

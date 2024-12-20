@@ -83,5 +83,8 @@
     <ClInclude Include="Map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
