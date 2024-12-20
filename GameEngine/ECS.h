@@ -21,7 +21,7 @@ inline ComponentID getNewComponentTypeID()
 
 template <typename T> inline ComponentID getComponentTypeID() noexcept
 {
-	static ComponentID typeID = getComponentTypeID();
+	static ComponentID typeID = getNewComponentTypeID();
 	return typeID;
 }
 
@@ -68,11 +68,7 @@ public:
 		return m_groupBitSet[group];
 	}
 
-	void addGroup(Group group)
-	{
-		m_groupBitSet[group] = true;
-		m_manager.AddToGroup(this, group);
-	}
+	void addGroup(Group group);
 
 	void deleteGroup(Group group)
 	{

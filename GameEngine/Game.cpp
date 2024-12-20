@@ -16,6 +16,15 @@ auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
 auto& player(g_manager.addEntity());
 
+enum g_groupLabels : std::size_t 
+{
+	Enemies,
+	Players,
+	Maps,
+	Colliders,
+	Objects
+};
+
 Game::Game() 
 {
 }
@@ -63,16 +72,20 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 
 	skeleton.addComponent<TransformComponent>(3);
 	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
-	skeleton.addComponent<ColliderComponent>("Skeleton");	
+	skeleton.addComponent<ColliderComponent>("Skeleton");
+	skeleton.addGroup(Enemies);
+
 
 	skeletonArcher.addComponent<TransformComponent>(300.0f, 300.0f, 3);
 	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png");
 	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
+	skeletonArcher.addGroup(Enemies);
 
 	player.addComponent<TransformComponent>(2);
 	player.addComponent<SpriteComponent>("Assets/Shinobi/Idle.png");
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Skeleton");
+	player.addGroup(Players);
 }
 
 void Game::handleEvents()
@@ -101,10 +114,26 @@ void Game::update()
 	}
 }
 
+auto& tiles(g_manager.getGroup(Maps));
+auto& enemies(g_manager.getGroup(Enemies));
+auto& players(g_manager.getGroup(Players));
+
+
 void Game::render()
 {
 	SDL_RenderClear(m_renderer);
- 	g_manager.draw();
+	for (auto& tile : tiles) 
+	{
+		tile->draw();
+	}	
+	for (auto& enemy : enemies)
+	{
+		enemy->draw();
+	}
+	for (auto& player : players)
+	{
+		player->draw();
+	}
 	SDL_RenderPresent(m_renderer);
 }
 
@@ -120,5 +149,6 @@ void Game::AddTile(int id, int xPos, int yPos)
 {
 	auto& tile(g_manager.addEntity());
 	tile.addComponent<TileComponent>(xPos, yPos, 32, 32, id);
+	tile.addGroup(Maps);
 }
 
