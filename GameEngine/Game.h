@@ -20,7 +20,7 @@ public:
 	void render();
 	void clean();
 
-	static void AddTile(int id, int xPos, int yPos);
+	static void AddTile(int srcX, int srcY, int xPos, int yPos);
 	static SDL_Renderer* m_renderer;
 	static SDL_Event m_event;
 	static std::vector<ColliderComponent*> m_colliders;

@@ -1,48 +1,39 @@
 #pragma once
 
 #include "ECS.h"
-#include "TransformComponent.h"
-#include "SpriteComponent.h"
 #include "SDL.h"
 
 class TileComponent : public Component
 {
 public:
-	TransformComponent* m_transform;
-	SpriteComponent* m_sprite;
 
-	SDL_Rect m_tileRect;
-	int m_tileID;
-	const char* m_path;
+	SDL_Texture* m_texture;
+	SDL_Rect m_srcRect, m_destRect;
 
 	TileComponent() = default;
 
-	TileComponent(int xPos, int yPos, int width, int height, int id)
+	~TileComponent()
 	{
-		m_tileRect.x = xPos;
-		m_tileRect.y = yPos;
-		m_tileRect.w = width;
-		m_tileRect.h = height;
-		m_tileID = id;
-
-		switch (m_tileID)
-		{
-		case 0:
-			m_path = "Craftpix TileSet/PNG/Ground_rocks.png";
-			break;
-		default:
-			break;
-		}
-		
+		SDL_DestroyTexture(m_texture);
 	}
 
-	void init() override
+	TileComponent(int srcX, int srcY, int xPos, int yPos, const char* filePath)
 	{
-		m_entity->addComponent<TransformComponent>((float)m_tileRect.x, (float)m_tileRect.y, m_tileRect.w, m_tileRect.h, 1);
-		m_transform = &m_entity->getComponent<TransformComponent>();
+		m_texture = TextureManager::LoadTexture(filePath);
 
-		m_entity->addComponent<SpriteComponent>();
-		m_sprite = &m_entity->getComponent<SpriteComponent>();
+		m_srcRect.x = srcX;
+		m_srcRect.y = srcY;
+		m_srcRect.w = 32;
+		m_srcRect.h = 32;
+
+		m_destRect.x = xPos;
+		m_destRect.y = yPos;
+		m_destRect.w = 32;
+		m_destRect.h = 32;
 	}
 
+	void draw() override
+	{
+		TextureManager::Draw(m_texture, m_srcRect, m_destRect, SDL_FLIP_NONE);
+	}
 };

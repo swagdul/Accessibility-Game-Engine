@@ -16,6 +16,9 @@ auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
 auto& player(g_manager.addEntity());
 
+// char* tileSet = "Assets\Maps\Dungeon_Tileset.png";
+const char* tileSet = "Assets\Maps\Ground_Rocks.png";
+
 enum g_groupLabels : std::size_t 
 {
 	Enemies,
@@ -68,13 +71,12 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	//Map::LoadMap();
+	Map::LoadMap("Assets/map.map", 8, 8);
 
 	skeleton.addComponent<TransformComponent>(3);
 	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
 	skeleton.addComponent<ColliderComponent>("Skeleton");
 	skeleton.addGroup(Enemies);
-
 
 	skeletonArcher.addComponent<TransformComponent>(300.0f, 200.0f, 3);
 	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png");
@@ -86,6 +88,7 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Skeleton");
 	player.addGroup(Players);
+
 }
 
 void Game::handleEvents()
@@ -145,10 +148,14 @@ void Game::clean()
 	std::cout << "Game Cleaned\n";
 }
 
-void Game::AddTile(int id, int xPos, int yPos)
+void Game::AddTile(int srcX, int srcY, int xPos, int yPos)
 {
 	auto& tile(g_manager.addEntity());
-	tile.addComponent<TileComponent>(xPos, yPos, 32, 32, id);
+	tile.addComponent<TileComponent>(srcX, srcY, xPos, yPos, tileSet);
 	tile.addGroup(Maps);
 }
+
+
+
+
 
