@@ -24,9 +24,9 @@ public:
 	static SDL_Renderer* m_renderer;
 	static SDL_Event m_event;
 	static std::vector<ColliderComponent*> m_colliders;
+	static bool m_isRunning;
 
 private:
-	bool m_isRunning = false;
 	SDL_Window* m_window;
 };
 

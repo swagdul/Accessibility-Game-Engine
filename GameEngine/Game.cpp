@@ -12,6 +12,8 @@ SDL_Event Game::m_event;
 
 std::vector<ColliderComponent*> Game::m_colliders;
 
+bool Game::m_isRunning = false;
+
 auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
 auto& player(g_manager.addEntity());

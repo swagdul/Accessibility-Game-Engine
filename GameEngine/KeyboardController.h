@@ -45,6 +45,10 @@ public:
 			m_sprite->PlayAnimation("Walk");
 			m_sprite->m_spriteFlip = SDL_FLIP_NONE;
 		}
+		if (m_keystates[SDL_SCANCODE_ESCAPE])
+		{
+			Game::m_isRunning = false;
+		}
 
 		if (!m_keystates[SDL_SCANCODE_W] &&
 			!m_keystates[SDL_SCANCODE_A] &&
