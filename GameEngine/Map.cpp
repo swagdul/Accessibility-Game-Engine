@@ -24,10 +24,10 @@ void Map::LoadMap(std::string filePath, int sizeX, int sizeY)
 		for (int x = 0; x < sizeX; x++)
 		{
 			map.get(tile);
-			srcY = atoi(&tile) * 32;
+			srcY = atoi(&tile) * 64;
 			map.get(tile);
-			srcX = atoi(&tile) * 32;
-			Game::AddTile(srcX, srcY, x * 32, y * 32);
+			srcX = atoi(&tile) * 64;
+			Game::AddTile(srcX, srcY, x * 128, y * 128);
 			map.ignore();
 		}
 	}

@@ -11,7 +11,7 @@ public:
 
 	int m_height = 128;
 	int m_width = 128;
-	int m_scale = 1;
+	float m_scale = 1.0f;
 
 	int m_speed = 3;
 
@@ -20,20 +20,21 @@ public:
 		m_position.Zero();
 	}
 
-	TransformComponent(float xPos, float yPos, int scale)
+	TransformComponent(float xPos, float yPos, float scale)
 	{
 		m_position.m_x = xPos;
 		m_position.m_y = yPos;
 		m_scale = scale;
 	}
 
-	TransformComponent(int scale)
+	TransformComponent(float scale)
 	{
-		m_position.Zero();
+		m_position.m_x = 400;
+		m_position.m_y = 320;
 		m_scale = scale;
 	}
 
-	TransformComponent(float xPos, float yPos, int height, int width, int scale)
+	TransformComponent(float xPos, float yPos, int height, int width, float scale)
 	{
 		m_position.m_x = xPos;
 		m_position.m_y = yPos;
@@ -50,7 +51,6 @@ public:
 
 	void update() override
 	{
-		m_position.m_x += m_velocity.m_x * m_speed;
-		m_position.m_y += m_velocity.m_y * m_speed;
+		
 	}
 };

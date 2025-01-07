@@ -16,8 +16,7 @@ auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
 auto& player(g_manager.addEntity());
 
-// char* tileSet = "Assets\Maps\Dungeon_Tileset.png";
-const char* tileSet = "Assets\Maps\Ground_Rocks.png";
+const char* tileSet = "Assets/Maps/Dungeon_Tileset.png";
 
 enum g_groupLabels : std::size_t 
 {
@@ -27,6 +26,10 @@ enum g_groupLabels : std::size_t
 	Colliders,
 	Objects
 };
+
+auto& tiles(g_manager.getGroup(Maps));
+auto& enemies(g_manager.getGroup(Enemies));
+auto& players(g_manager.getGroup(Players));
 
 Game::Game() 
 {
@@ -71,19 +74,19 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	Map::LoadMap("Assets/map.map", 8, 8);
+	Map::LoadMap("Assets/map.map", 12, 10);
 
-	skeleton.addComponent<TransformComponent>(3);
+	/*skeleton.addComponent<TransformComponent>(100.0f, 100.0f, 3);
 	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
 	skeleton.addComponent<ColliderComponent>("Skeleton");
 	skeleton.addGroup(Enemies);
 
-	skeletonArcher.addComponent<TransformComponent>(300.0f, 200.0f, 3);
+	skeletonArcher.addComponent<TransformComponent>(300.0f, 150.0f, 3);
 	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png");
 	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
-	skeletonArcher.addGroup(Enemies);
+	skeletonArcher.addGroup(Enemies);*/
 
-	player.addComponent<TransformComponent>(2);
+	player.addComponent<TransformComponent>(2.2f);
 	player.addComponent<SpriteComponent>("Assets/Shinobi/Shinobi_Animations.png", true);
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Skeleton");
@@ -111,15 +114,20 @@ void Game::update()
 	g_manager.refresh();
 	g_manager.update();
 
+	Vector2D playerVelocity = player.getComponent<TransformComponent>().m_velocity;
+	int playerSpeed = player.getComponent<TransformComponent>().m_speed;
+
 	for (auto collider : m_colliders)
 	{
 		Collision::AABB(player.getComponent<ColliderComponent>(), *collider);
+	}	
+	
+	for (auto tile : tiles)
+	{
+		tile->getComponent<TileComponent>().m_destRect.x += -(playerVelocity.m_x * playerSpeed);
+		tile->getComponent<TileComponent>().m_destRect.y += -(playerVelocity.m_y * playerSpeed);
 	}
 }
-
-auto& tiles(g_manager.getGroup(Maps));
-auto& enemies(g_manager.getGroup(Enemies));
-auto& players(g_manager.getGroup(Players));
 
 
 void Game::render()

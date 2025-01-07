@@ -23,13 +23,13 @@ public:
 
 		m_srcRect.x = srcX;
 		m_srcRect.y = srcY;
-		m_srcRect.w = 32;
-		m_srcRect.h = 32;
+		m_srcRect.w = 64;
+		m_srcRect.h = 64;
 
 		m_destRect.x = xPos;
 		m_destRect.y = yPos;
-		m_destRect.w = 32;
-		m_destRect.h = 32;
+		m_destRect.w = 128;
+		m_destRect.h = 128;
 	}
 
 	void draw() override
