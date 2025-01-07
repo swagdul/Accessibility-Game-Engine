@@ -29,8 +29,8 @@ public:
 
 	TransformComponent(float scale)
 	{
-		m_position.m_x = 400;
-		m_position.m_y = 320;
+		m_position.m_x = 250;
+		m_position.m_y = 160;
 		m_scale = scale;
 	}
 
@@ -51,6 +51,7 @@ public:
 
 	void update() override
 	{
-		
+		m_position.m_x += m_velocity.m_x * m_speed;
+		m_position.m_y += m_velocity.m_y * m_speed;
 	}
 };

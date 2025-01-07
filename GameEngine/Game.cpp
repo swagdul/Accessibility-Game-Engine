@@ -10,6 +10,8 @@ Manager g_manager;
 SDL_Renderer* Game::m_renderer = nullptr;
 SDL_Event Game::m_event;
 
+SDL_Rect Game::m_camera = { 0, 0, 800, 640 };
+
 std::vector<ColliderComponent*> Game::m_colliders;
 
 bool Game::m_isRunning = false;
@@ -91,7 +93,7 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	player.addComponent<TransformComponent>(2.2f);
 	player.addComponent<SpriteComponent>("Assets/Shinobi/Shinobi_Animations.png", true);
 	player.addComponent<KeyboardController>();
-	player.addComponent<ColliderComponent>("Skeleton");
+	player.addComponent<ColliderComponent>("Player");
 	player.addGroup(Players);
 
 }
@@ -116,19 +118,22 @@ void Game::update()
 	g_manager.refresh();
 	g_manager.update();
 
-	Vector2D playerVelocity = player.getComponent<TransformComponent>().m_velocity;
-	int playerSpeed = player.getComponent<TransformComponent>().m_speed;
-
 	for (auto collider : m_colliders)
 	{
 		Collision::AABB(player.getComponent<ColliderComponent>(), *collider);
 	}	
-	
-	for (auto tile : tiles)
-	{
-		tile->getComponent<TileComponent>().m_destRect.x += -(playerVelocity.m_x * playerSpeed);
-		tile->getComponent<TileComponent>().m_destRect.y += -(playerVelocity.m_y * playerSpeed);
-	}
+
+	m_camera.x = player.getComponent<TransformComponent>().m_position.m_x - 400;
+	m_camera.y = player.getComponent<TransformComponent>().m_position.m_y - 320;
+
+	if (m_camera.x < 0)
+		m_camera.x = 0;
+	if (m_camera.y < 0)
+		m_camera.y = 0;
+	if (m_camera.x > m_camera.w)
+		m_camera.x = m_camera.w;
+	if (m_camera.y > m_camera.h)
+		m_camera.y = m_camera.h;
 }
 
 
