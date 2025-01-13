@@ -5,6 +5,7 @@
 #include "Collision.h"
 #include "Map.h"
 
+Map* g_map;
 Manager g_manager;
 
 SDL_Renderer* Game::m_renderer = nullptr;
@@ -12,28 +13,11 @@ SDL_Event Game::m_event;
 
 SDL_Rect Game::m_camera = { 0, 0, 800, 640 };
 
-std::vector<ColliderComponent*> Game::m_colliders;
-
 bool Game::m_isRunning = false;
 
 auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
 auto& player(g_manager.addEntity());
-
-const char* tileSet = "Assets/Maps/Dungeon_Tileset.png";
-
-enum g_groupLabels : std::size_t 
-{
-	Enemies,
-	Players,
-	Maps,
-	Colliders,
-	Objects
-};
-
-auto& tiles(g_manager.getGroup(Maps));
-auto& enemies(g_manager.getGroup(Enemies));
-auto& players(g_manager.getGroup(Players));
 
 Game::Game() 
 {
@@ -78,25 +62,32 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
-	Map::LoadMap("Assets/map.map", 12, 10);
+	g_map = new Map("Assets/Maps/Dungeon_Tileset.png", 4, 16);
 
-	/*skeleton.addComponent<TransformComponent>(100.0f, 100.0f, 3);
+	g_map->LoadMap("Assets/map.map", 25, 20);
+
+	skeleton.addComponent<TransformComponent>(100.0f, 100.0f, 2);
 	skeleton.addComponent<SpriteComponent>("Assets/Skeleton/Idle.png");
 	skeleton.addComponent<ColliderComponent>("Skeleton");
 	skeleton.addGroup(Enemies);
 
-	skeletonArcher.addComponent<TransformComponent>(300.0f, 150.0f, 3);
+	skeletonArcher.addComponent<TransformComponent>(300.0f, 150.0f, 2);
 	skeletonArcher.addComponent<SpriteComponent>("Assets/Skeleton_Archer/Idle.png");
 	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
-	skeletonArcher.addGroup(Enemies);*/
+	skeletonArcher.addGroup(Enemies);
 
-	player.addComponent<TransformComponent>(2.2f);
+	player.addComponent<TransformComponent>(1.2f);
 	player.addComponent<SpriteComponent>("Assets/Shinobi/Shinobi_Animations.png", true);
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Player");
 	player.addGroup(Players);
 
 }
+
+auto& tiles(g_manager.getGroup(Game::Maps));
+auto& colliders(g_manager.getGroup(Game::Colliders));
+auto& enemies(g_manager.getGroup(Game::Enemies));
+auto& players(g_manager.getGroup(Game::Players));
 
 void Game::handleEvents()
 {
@@ -115,13 +106,21 @@ void Game::handleEvents()
 
 void Game::update()
 {
+	SDL_Rect playerCollider = player.getComponent<ColliderComponent>().m_collider;
+	Vector2D playerPosition = player.getComponent<TransformComponent>().m_position;
+
 	g_manager.refresh();
 	g_manager.update();
 
-	for (auto collider : m_colliders)
+	for (auto& collider : colliders)
 	{
-		Collision::AABB(player.getComponent<ColliderComponent>(), *collider);
-	}	
+		SDL_Rect boundaryCollider = collider->getComponent<ColliderComponent>().m_collider;
+
+		if (Collision::AABB(boundaryCollider, playerCollider))
+		{
+			player.getComponent<TransformComponent>().m_position = playerPosition;
+		}
+	}
 
 	m_camera.x = player.getComponent<TransformComponent>().m_position.m_x - 400;
 	m_camera.y = player.getComponent<TransformComponent>().m_position.m_y - 320;
@@ -143,6 +142,10 @@ void Game::render()
 	for (auto& tile : tiles) 
 	{
 		tile->draw();
+	}		
+	for (auto& collider : colliders) 
+	{
+		collider->draw();
 	}	
 	for (auto& enemy : enemies)
 	{
@@ -163,12 +166,6 @@ void Game::clean()
 	std::cout << "Game Cleaned\n";
 }
 
-void Game::AddTile(int srcX, int srcY, int xPos, int yPos)
-{
-	auto& tile(g_manager.addEntity());
-	tile.addComponent<TileComponent>(srcX, srcY, xPos, yPos, tileSet);
-	tile.addGroup(Maps);
-}
 
 
 
