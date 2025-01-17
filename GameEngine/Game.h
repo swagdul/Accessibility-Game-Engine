@@ -3,8 +3,10 @@
 #include "SDL_image.h"
 #include <iostream>
 #include <vector>
+#include "AssetManager.h"
 
 class ColliderComponent;
+class AssetManager;
 
 class Game
 {
@@ -24,6 +26,7 @@ public:
 	static SDL_Event m_event;
 	static bool m_isRunning;
 	static SDL_Rect m_camera;
+	static AssetManager* m_assets;
 
 	enum g_groupLabels : std::size_t
 	{
@@ -31,7 +34,8 @@ public:
 		Players,
 		Maps,
 		Colliders,
-		Objects
+		Objects,
+		Projectiles
 	};
 
 private:
