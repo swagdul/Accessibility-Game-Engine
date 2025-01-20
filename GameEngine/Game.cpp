@@ -5,6 +5,7 @@
 #include "Collision.h"
 #include "Map.h"
 #include "AssetManager.h"
+#include "AccessibilityManager.h"
 
 
 Map* g_map;
@@ -65,6 +66,8 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	{
 		m_isRunning = false;
 	}
+
+	//AccessibilityManager::EnableHighContrastMode(true);
 
 	m_assets->AddTexture("Terrain", "Assets/Maps/Dungeon_Tileset.png");
 	m_assets->AddTexture("Player", "Assets/Shinobi/Shinobi_Animations.png");
