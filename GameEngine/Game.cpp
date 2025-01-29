@@ -6,7 +6,8 @@
 #include "Map.h"
 #include "AssetManager.h"
 #include "AccessibilityManager.h"
-
+#include "MenuSystem.h"
+#include <sstream>
 
 Map* g_map;
 Manager g_manager;
@@ -24,7 +25,9 @@ auto& skeleton(g_manager.addEntity());
 auto& skeletonArcher(g_manager.addEntity());
 auto& player(g_manager.addEntity());
 
-Game::Game()
+auto& label(g_manager.addEntity());
+
+Game::Game() 
 {
 }
 
@@ -67,6 +70,23 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 		m_isRunning = false;
 	}
 
+	if (TTF_Init() == -1)
+	{
+		std::cout << "Error: SDL_TTF\n";
+	}
+
+	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 24);
+	MenuSystem menu(this, m_renderer, font, { "Start Game", "Options", "Exit" });
+
+	int selectedOption = menu.DisplayMenu();
+
+	if (selectedOption == -1 || selectedOption == 2) {  
+		m_isRunning = false;
+		return;
+	}
+
+	TTF_CloseFont(font);
+
 	//AccessibilityManager::EnableHighContrastMode(true);
 
 	m_assets->AddTexture("Terrain", "Assets/Maps/Dungeon_Tileset.png");
@@ -74,6 +94,8 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	m_assets->AddTexture("Skeleton", "Assets/Skeleton/Idle.png");
 	m_assets->AddTexture("Skeleton Archer", "Assets/Skeleton_Archer/Idle.png");
 	m_assets->AddTexture("Projectile", "Assets/Projectile.png");
+
+	m_assets->AddFont("Arial", "Assets/Arial.ttf", AccessibilityManager::GetFontSize());
 
 	g_map = new Map("Terrain", 4, 16);
 
@@ -94,6 +116,9 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Player");
 	player.addGroup(Players);
+
+	SDL_Colour white = { 255, 255, 255, 255 };
+	label.addComponent<UILabel>(10, 10, "Label", "Arial", white);
 
 	m_assets->CreateProjectile(Vector2D(500, 500), Vector2D(2, 0), 200, 2, "Projectile");
 }
@@ -123,6 +148,10 @@ void Game::update()
 {
 	SDL_Rect playerCollider = player.getComponent<ColliderComponent>().m_collider;
 	Vector2D playerPosition = player.getComponent<TransformComponent>().m_position;
+
+	std::stringstream stringStream;
+	stringStream << "Player position: " << playerPosition;
+	label.getComponent<UILabel>().SetLabelText(stringStream.str(), "Arial");
 
 	g_manager.refresh();
 	g_manager.update();
@@ -164,14 +193,15 @@ void Game::update()
 void Game::render()
 {
 	SDL_RenderClear(m_renderer);
-	for (auto& tile : tiles) 
+
+	for (auto& tile : tiles)
 	{
 		tile->draw();
-	}		
-	for (auto& collider : colliders) 
+	}
+	for (auto& collider : colliders)
 	{
 		collider->draw();
-	}	
+	}
 	for (auto& enemy : enemies)
 	{
 		enemy->draw();
@@ -184,6 +214,8 @@ void Game::render()
 	{
 		projectile->draw();
 	}
+	label.draw();
+
 	SDL_RenderPresent(m_renderer);
 }
 
@@ -194,9 +226,5 @@ void Game::clean()
 	SDL_Quit;
 	std::cout << "Game Cleaned\n";
 }
-
-
-
-
 
 

@@ -23,3 +23,8 @@ bool AccessibilityManager::IsHighContrastEnabled()
 {
 	return m_highContrastEnabled;
 }
+
+int AccessibilityManager::GetFontSize()
+{
+	return m_fontSize;
+}

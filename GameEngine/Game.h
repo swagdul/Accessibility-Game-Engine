@@ -15,7 +15,7 @@ public:
 	~Game();
 
 	void init(const char* title, int xPos, int yPos, int width, int height, bool isFullscreen);
-	
+
 	void handleEvents();
 	void update();
 	bool isRunning() { return m_isRunning; }

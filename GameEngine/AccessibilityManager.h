@@ -5,9 +5,10 @@ public:
 
 	static void EnableHighContrastMode(bool enable);
 	static void AdjustFontSize(int size);
-	static void EnableKEyboardNavigation(bool enable);
+	static void EnableKeyboardNavigation(bool enable);
 
 	static bool IsHighContrastEnabled();
+	static int GetFontSize();
 
 private:
 

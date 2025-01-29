@@ -47,7 +47,7 @@ public:
 		}
 		if (m_keystates[SDL_SCANCODE_ESCAPE])
 		{
-			Game::m_isRunning = false;
+			//Game::m_isRunning = false;
 		}
 
 		if (!m_keystates[SDL_SCANCODE_W] &&
