@@ -50,8 +50,8 @@ public:
 		{
 			m_collider.x = static_cast<int>(m_transform->m_position.m_x);
 			m_collider.y = static_cast<int>(m_transform->m_position.m_y);
-			m_collider.w = (m_transform->m_width / 2) * m_transform->m_scale;
-			m_collider.h = (m_transform->m_height / 2) * m_transform->m_scale;
+			m_collider.w = static_cast<int>((m_transform->m_width / 2) * m_transform->m_scale);
+			m_collider.h = static_cast<int>((m_transform->m_height / 2) * m_transform->m_scale);
 		}
 
 		m_destRect.x = m_collider.x - Game::m_camera.x;

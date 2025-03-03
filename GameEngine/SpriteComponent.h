@@ -36,6 +36,21 @@ public:
 		PlayAnimation("Idle");
 
 		setTexture(textureId);
+	}	
+	
+	SpriteComponent(std::string textureId, bool isAnimated, int frames, int speed)
+	{
+		m_isAnimated = isAnimated;
+
+		Animation idle = Animation(0, frames, speed);
+		Animation walk = Animation(1, frames, speed);
+
+		m_animations.emplace("Idle", idle);
+		m_animations.emplace("Walk", walk);
+		
+		PlayAnimation("Idle");
+
+		setTexture(textureId);
 	}
 
 	~SpriteComponent()
@@ -46,6 +61,11 @@ public:
 	void setTexture(std::string textureId)
 	{
 		m_texture = Game::m_assets->GetTexture(textureId);
+	}
+
+	void enableAnimation()
+	{
+		m_isAnimated = true;
 	}
 
 	void init() override
@@ -67,8 +87,8 @@ public:
 
 		m_destRect.x = static_cast<int>(m_transform->m_position.m_x) - Game::m_camera.x;
 		m_destRect.y = static_cast<int>(m_transform->m_position.m_y) - Game::m_camera.y;
-		m_destRect.w = m_transform->m_width * m_transform->m_scale;
-		m_destRect.h = m_transform->m_height * m_transform->m_scale;
+		m_destRect.w = static_cast<int>(m_transform->m_width * m_transform->m_scale);
+		m_destRect.h = static_cast<int>(m_transform->m_height * m_transform->m_scale);
 	}
 
 	void draw() override

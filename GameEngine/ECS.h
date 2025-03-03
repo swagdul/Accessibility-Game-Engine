@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <bitset>
 #include <array>
+#include <string>
 
 class Component;
 class Entity;
@@ -48,7 +49,7 @@ public:
 class Entity
 {
 public:
-	Entity(Manager& manager) : m_manager(manager) {}
+	Entity(Manager& manager) : m_manager(manager), m_name("Unnamed") {}
 
 	void update()
 	{
@@ -101,6 +102,16 @@ public:
 		return *static_cast<T*>(ptr);
 	}
 
+	void setName(const std::string& name)
+	{
+		m_name = name;
+	}
+
+	const std::string& getName() const
+	{
+		return m_name;
+	}
+
 private:
 	Manager& m_manager;
 
@@ -111,6 +122,8 @@ private:
 	ComponentBitSet m_componentBitSet;
 
 	GroupBitSet m_groupBitSet;
+
+	std::string m_name;
 };
 
 class Manager
@@ -164,6 +177,16 @@ public:
 		std::unique_ptr<Entity> uPtr{ e };
 		m_entites.emplace_back(std::move(uPtr));
 		return *e;
+	}
+
+	std::vector<Entity*> getEntities() const
+	{
+		std::vector<Entity*> result;
+		for (const auto& entity : m_entites)
+		{
+			result.push_back(entity.get());
+		}
+		return result;
 	}
 
 private:

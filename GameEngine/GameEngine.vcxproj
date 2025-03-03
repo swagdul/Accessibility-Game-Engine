@@ -144,11 +144,13 @@
     <ClCompile Include="AccessibilityManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="DebugMenu.cpp" />
     <ClCompile Include="ECS.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MenuSystem.cpp" />
+    <ClCompile Include="ScreenReader.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Vector2D.cpp" />
   </ItemGroup>
@@ -159,10 +161,12 @@
     <ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Components.h" />
+    <ClInclude Include="DebugMenu.h" />
     <ClInclude Include="KeyboardController.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="MenuSystem.h" />
     <ClInclude Include="ProjectileComponent.h" />
+    <ClInclude Include="ScreenReader.h" />
     <ClInclude Include="TileComponent.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="ECS.h" />

@@ -14,6 +14,7 @@ AssetManager::~AssetManager()
 void AssetManager::CreateProjectile(Vector2D position, Vector2D velocity, int range, int speed, std::string textureId)
 {
 	auto& projectile(m_manager->addEntity());
+	projectile.setName("Projectile");
 	projectile.addComponent<TransformComponent>(position.m_x, position.m_y, 32, 32, 1);
 	projectile.addComponent<SpriteComponent>(textureId, false);
 	projectile.addComponent<ProjectileCompoment>(range, speed, velocity);

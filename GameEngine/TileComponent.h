@@ -22,8 +22,8 @@ public:
 	{
 		m_texture = Game::m_assets->GetTexture(textureId);
 
-		m_postion.m_x = xPos;
-		m_postion.m_y = yPos;
+		m_postion.m_x = static_cast<int>(xPos);
+		m_postion.m_y = static_cast<int>(yPos);
 
 		m_srcRect.x = srcX;
 		m_srcRect.y = srcY;

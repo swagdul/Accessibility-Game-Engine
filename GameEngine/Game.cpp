@@ -7,6 +7,7 @@
 #include "AssetManager.h"
 #include "AccessibilityManager.h"
 #include "MenuSystem.h"
+#include "DebugMenu.h"
 #include <sstream>
 
 Map* g_map;
@@ -94,6 +95,7 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	m_assets->AddTexture("Skeleton", "Assets/Skeleton/Idle.png");
 	m_assets->AddTexture("Skeleton Archer", "Assets/Skeleton_Archer/Idle.png");
 	m_assets->AddTexture("Projectile", "Assets/Projectile.png");
+	m_assets->AddTexture("DefaultTexture", "Assets/Default/Idle.png");
 
 	m_assets->AddFont("Arial", "Assets/Arial.ttf", AccessibilityManager::GetFontSize());
 
@@ -101,21 +103,25 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 
 	g_map->LoadMap("Assets/map.map", 25, 20);
 
+	skeleton.setName("Skeleton");
 	skeleton.addComponent<TransformComponent>(100.0f, 100.0f, 2);
-	skeleton.addComponent<SpriteComponent>("Skeleton");
+	skeleton.addComponent<SpriteComponent>("Skeleton", true, 7, 100);
 	skeleton.addComponent<ColliderComponent>("Skeleton");
 	skeleton.addGroup(Enemies);
 
+	skeletonArcher.setName("Skeleton Archer");
 	skeletonArcher.addComponent<TransformComponent>(300.0f, 150.0f, 2);
-	skeletonArcher.addComponent<SpriteComponent>("Skeleton Archer");
+	skeletonArcher.addComponent<SpriteComponent>("Skeleton Archer", true, 7, 100);
 	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
 	skeletonArcher.addGroup(Enemies);
 
+	player.setName("Player");
 	player.addComponent<TransformComponent>(1.2f);
 	player.addComponent<SpriteComponent>("Player", true);
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Player");
 	player.addGroup(Players);
+
 
 	SDL_Colour white = { 255, 255, 255, 255 };
 	label.addComponent<UILabel>(10, 10, "Label", "Arial", white);
@@ -132,6 +138,11 @@ auto& projectiles(g_manager.getGroup(Game::Projectiles));
 void Game::handleEvents()
 {
 	SDL_PollEvent(&m_event);
+
+	if (m_event.type == SDL_KEYDOWN && m_event.key.keysym.sym == SDLK_F1) {
+		DebugMenu debugMenu(this, m_renderer);
+		debugMenu.Run();
+	}
 
 	switch (m_event.type)
 	{
@@ -223,7 +234,7 @@ void Game::clean()
 {
 	SDL_DestroyWindow(m_window);
 	SDL_DestroyRenderer(m_renderer);
-	SDL_Quit;
+	SDL_Quit();
 	std::cout << "Game Cleaned\n";
 }
 
