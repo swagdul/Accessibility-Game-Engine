@@ -162,11 +162,13 @@
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="DebugMenu.h" />
+    <ClInclude Include="HealthComponent.h" />
     <ClInclude Include="KeyboardController.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="MenuSystem.h" />
     <ClInclude Include="ProjectileComponent.h" />
     <ClInclude Include="ScreenReader.h" />
+    <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="TileComponent.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="ECS.h" />

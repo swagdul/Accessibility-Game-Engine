@@ -1,6 +1,7 @@
 #include "DebugMenu.h"
 #include "ECS.h"
 #include "Components.h"
+#include "TextRenderer.h"
 #include <SDL_ttf.h>
 #include <iostream>
 #include <sstream>
@@ -12,16 +13,26 @@ extern Manager g_manager;
 DebugMenu::DebugMenu(Game* game, SDL_Renderer* renderer)
 	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0)
 {
+	m_menuOptions.push_back("List Entities");
 	m_menuOptions.push_back("Create Entities");
 	m_menuOptions.push_back("Modify Entities");
-	m_menuOptions.push_back("List Entities");
-	m_menuOptions.push_back("Exit Debug Menu");
+	m_menuOptions.push_back("Exit Menu");
 
 	ScreenReader::Speak(m_menuOptions[m_selectedIndex]);
 }
 
 DebugMenu::~DebugMenu()
 {
+}
+
+void DebugMenu::AddLogMessage(const std::string& message)
+{
+	m_logMessages.push_back(message);
+
+	if (m_logMessages.size() > 5)
+	{
+		m_logMessages.erase(m_logMessages.begin());
+	}
 }
 
 void DebugMenu::Run()
@@ -79,7 +90,11 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 
 		case SDLK_RETURN:
 
-			if (m_menuOptions[m_selectedIndex] == "Create Entities")
+			if (m_menuOptions[m_selectedIndex] == "List Entities")
+			{
+				ListEntities();
+			}
+			else if (m_menuOptions[m_selectedIndex] == "Create Entities")
 			{
 				CreateEntity();
 			}
@@ -87,16 +102,12 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 			{
 				ModifyEntity();
 			}
-			else if (m_menuOptions[m_selectedIndex] == "List Entities")
-			{
-				ListEntities();
-			}
-			else if (m_menuOptions[m_selectedIndex] == "Exit Debug Menu")
+			else if (m_menuOptions[m_selectedIndex] == "Exit Menu")
 			{
 				m_isRunning = false;
 			}
 			break;
-			
+
 		case SDLK_ESCAPE:
 
 			m_isRunning = false;
@@ -113,9 +124,14 @@ void DebugMenu::Render()
 
 	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 150);
-	SDL_RenderClear(m_renderer);
+	//SDL_RenderClear(m_renderer);
+	SDL_RenderFillRect(m_renderer, nullptr);
 
 	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 24);
+	if (!font) {
+		std::cerr << "DebugMenu::Render: Failed to load font: " << TTF_GetError() << std::endl;
+		return;
+	}
 
 	SDL_Color normalColor = { 255, 255, 255, 255 };
 	SDL_Color highlightColor = { 255, 0, 0, 255 };
@@ -142,18 +158,58 @@ void DebugMenu::Render()
 		SDL_FreeSurface(textSurface);
 	}
 
+	int logStartY = 100;
+	int logSpacingY = 30;
+
+	for (size_t i = 0; i < m_logMessages.size(); ++i)
+	{
+		DrawText(m_renderer, m_logMessages[i], 100, logStartY + static_cast<int>(i) * logSpacingY, font, normalColor);
+	}
+
 	SDL_RenderPresent(m_renderer);
 
 	TTF_CloseFont(font);
 }
 
+void DebugMenu::RenderSubMenu(const std::string& title)
+{
+	int windowWidth = 0, windowHeight = 0;
+	SDL_GetRendererOutputSize(m_renderer, &windowWidth, &windowHeight);
+
+	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 250);
+	SDL_Rect modalRect = { windowWidth / 4, windowHeight / 4, windowWidth / 2, windowHeight / 2 };
+	SDL_RenderFillRect(m_renderer, &modalRect);
+
+	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 28);
+	if (font) {
+		SDL_Color titleColor = { 255, 255, 255, 255 };
+		DrawText(m_renderer, title, modalRect.x + 20, modalRect.y + 20, font, titleColor);
+		TTF_CloseFont(font);
+	}
+	SDL_RenderPresent(m_renderer);
+}
+
 void DebugMenu::CreateEntity()
 {
+	m_logMessages.clear();
+	RenderSubMenu("Create Entity");
+	AddLogMessage("Create Entity");
+
+	Render();
+	SDL_RenderPresent(m_renderer);
+
 	std::cout << "Creating new entity..." << std::endl;
+	AddLogMessage("Creating new entity.");
+	Render();
+	SDL_RenderPresent(m_renderer);
 	ScreenReader::Speak("Creating new entity.");
 
 	//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	std::cout << "Entity enter name: ";
+	AddLogMessage("Enter the name of the entity.");
+	Render();
+	SDL_RenderPresent(m_renderer);
 	ScreenReader::Speak("Enter the name of the entity.");
 	std::string name;
 	std::getline(std::cin, name);
@@ -164,10 +220,16 @@ void DebugMenu::CreateEntity()
 
 	Entity& newEntity = g_manager.addEntity();
 	newEntity.setName(name);
-	ScreenReader::Speak("Entity created with name " + name);
 	std::cout << "Entity \"" << name << "\" created." << std::endl;
+	AddLogMessage("Entity \"" + name + "\" created.");
+	Render();
+	SDL_RenderPresent(m_renderer);
+	ScreenReader::Speak("Entity created with name " + name);
 
 	std::cout << "What group would you like to add this Entity to?" << std::endl;
+	AddLogMessage("What group would you like to add this Entity to?");
+	Render();
+	SDL_RenderPresent(m_renderer);
 	ScreenReader::Speak("What group would you like to add this Entity to?");
 
 	//Currently hardcoding, adapt later 
@@ -178,6 +240,17 @@ void DebugMenu::CreateEntity()
 	std::cout << "3: Colliders" << std::endl;
 	std::cout << "4: Objects" << std::endl;
 	std::cout << "5: Projectiles" << std::endl;
+
+	AddLogMessage("Available groups.");
+	AddLogMessage("Select 0 for Enemies.");	
+	AddLogMessage("Select 1 for Players.");
+	AddLogMessage("Select 2 for Maps.");
+	AddLogMessage("Select 3 for Colliders.");
+	AddLogMessage("Select 4 for Objects.");
+	AddLogMessage("Select 5 for Projectiles.");
+
+	Render();
+	SDL_RenderPresent(m_renderer);
 
 	ScreenReader::Speak("Available groups.");
 	ScreenReader::Speak("Select 0 for Enemies.");
@@ -194,7 +267,10 @@ void DebugMenu::CreateEntity()
 	{
 		ScreenReader::Speak("Invalid group choice. Defaulting to Object");
 		std::cout << "Invalid group choice. Defaulting to Object" << std::endl;
-		groupChoice = 4; //defualt to object
+		AddLogMessage("Invalid group choice. Defaulting to Object");
+		Render();
+		SDL_RenderPresent(m_renderer);
+		groupChoice = 0; //defualt to enemy
 		return;
 	}
 
@@ -202,8 +278,11 @@ void DebugMenu::CreateEntity()
 
 
 	//Prompt to add TransformComponent
-	std::cout << "Would you like to add a TransformComponent? (1 for yes, 0 for no): ";
+	std::cout << "Add a TransformComponent? (1 for yes, 0 for no): ";
+	AddLogMessage("Add a TransformComponent? (1 for yes, 0 for no): ");
 	ScreenReader::Speak("Would you like to add a TransformComponent? Press 1 for yes or 0 for no.");
+	Render();
+	SDL_RenderPresent(m_renderer);
 	int addTransform = 0;
 	std::cin >> addTransform;
 	if (addTransform == 1)
@@ -212,29 +291,46 @@ void DebugMenu::CreateEntity()
 		int height = 128, width = 128;
 
 		std::cout << "Enter X position (float): ";
+		AddLogMessage("Enter X position (float): ");
 		ScreenReader::Speak("Enter the X position as a float.");
+		Render();
+		SDL_RenderPresent(m_renderer);
 		std::cin >> xPos;
 
 		std::cout << "Enter Y position (float): ";
+		AddLogMessage("Enter Y position (float): ");
 		ScreenReader::Speak("Enter the Y position as a float.");
+		Render();
+		SDL_RenderPresent(m_renderer);
 		std::cin >> yPos;
 
 		std::cout << "Enter height (int): ";
+		AddLogMessage("Enter height (int): ");
 		ScreenReader::Speak("Enter the height as an integer.");
+		Render();
+		SDL_RenderPresent(m_renderer);
 		std::cin >> height;
 
 		std::cout << "Enter width (int): ";
-		ScreenReader::Speak("Enter the width as an integer.");	
+		AddLogMessage("Enter width (int): ");
+		ScreenReader::Speak("Enter the width as an integer.");
+		Render();
+		SDL_RenderPresent(m_renderer);
 		std::cin >> width;
 
 		std::cout << "Enter scale (float): ";
+		AddLogMessage("Enter scale (float): ");
 		ScreenReader::Speak("Enter the scale as a float.");
+		Render();
+		SDL_RenderPresent(m_renderer);
 		std::cin >> scale;
 
 		newEntity.addComponent<TransformComponent>(xPos, yPos, height, width, scale);
-		ScreenReader::Speak("Transform component added.");
 		std::cout << "Transform component added." << std::endl;
-
+		AddLogMessage("Transform component added.");
+		ScreenReader::Speak("Transform component added.");
+		Render();
+		SDL_RenderPresent(m_renderer);
 	}
 
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -278,7 +374,7 @@ void DebugMenu::ModifyEntity()
 {
 	std::vector<Entity*> entities = g_manager.getEntities();
 
-	if (entities.empty()) 
+	if (entities.empty())
 	{
 		ScreenReader::Speak("No entities available to modify.");
 		std::cout << "No entities available to modify." << std::endl;
@@ -373,7 +469,7 @@ void DebugMenu::ModifyEntity()
 			tc.m_width = newWidth;
 			tc.m_height = newHeight;
 			tc.m_scale = newScale;
-			
+
 			ScreenReader::Speak("Transform component modified.");
 			std::cout << "Transform component updated." << std::endl;
 		}
@@ -414,7 +510,7 @@ void DebugMenu::ModifyEntity()
 			ScreenReader::Speak("Sprite component modified.");
 			std::cout << "Sprite component updated." << std::endl;
 		}
-		else 
+		else
 		{
 			ScreenReader::Speak("Entity does not have a Sprite component.");
 			std::cout << "Entity does not have a Sprite component." << std::endl;
@@ -434,14 +530,14 @@ void DebugMenu::ModifyEntity()
 		int addChoice;
 		std::cin >> addChoice;
 
-		if (addChoice == 1) 
+		if (addChoice == 1)
 		{
-			if (selectedEntity->hasComponent<TransformComponent>()) 
+			if (selectedEntity->hasComponent<TransformComponent>())
 			{
 				ScreenReader::Speak("Entity already has a Transform component.");
 				std::cout << "Entity already has a Transform component." << std::endl;
 			}
-			else 
+			else
 			{
 				float xPos = 0.0f, yPos = 0.0f, scale = 1.0f;
 				int height = 128, width = 128;
@@ -471,14 +567,14 @@ void DebugMenu::ModifyEntity()
 				std::cout << "Transform component added." << std::endl;
 			}
 		}
-		else if (addChoice == 2) 
+		else if (addChoice == 2)
 		{
-			if (selectedEntity->hasComponent<SpriteComponent>()) 
+			if (selectedEntity->hasComponent<SpriteComponent>())
 			{
 				ScreenReader::Speak("Entity already has a Sprite component.");
 				std::cout << "Entity already has a Sprite component." << std::endl;
 			}
-			else 
+			else
 			{
 				std::string textureID;
 				bool animated = false;
@@ -503,14 +599,14 @@ void DebugMenu::ModifyEntity()
 			}
 		}
 	}
-	else 
+	else
 	{
 		ScreenReader::Speak("Invalid modification choice.");
 		std::cout << "Invalid modification choice." << std::endl;
 	}
 
 	g_manager.refresh();
- }
+}
 
 
 void DebugMenu::ListEntities()
@@ -553,16 +649,6 @@ void DebugMenu::ListEntities()
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
-void DebugMenu::AddComponentToEntity()
-{
-	std::cout << "Enter entity index to add a TransformComponent: ";
-	int entityIndex;
-	std::cin >> entityIndex;
 
-	ScreenReader::Speak("Transform component added to entity.");
-	std::cout << "Transform component added to entity " << entityIndex << std::endl;
-
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-}
 
 

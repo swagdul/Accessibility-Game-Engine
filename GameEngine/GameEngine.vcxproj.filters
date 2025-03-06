@@ -116,5 +116,11 @@
     <ClInclude Include="DebugMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HealthComponent.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

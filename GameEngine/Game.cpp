@@ -28,7 +28,7 @@ auto& player(g_manager.addEntity());
 
 auto& label(g_manager.addEntity());
 
-Game::Game() 
+Game::Game()
 {
 }
 
@@ -81,7 +81,7 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 
 	int selectedOption = menu.DisplayMenu();
 
-	if (selectedOption == -1 || selectedOption == 2) {  
+	if (selectedOption == -1 || selectedOption == 2) {
 		m_isRunning = false;
 		return;
 	}
@@ -104,22 +104,25 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	g_map->LoadMap("Assets/map.map", 25, 20);
 
 	skeleton.setName("Skeleton");
-	skeleton.addComponent<TransformComponent>(100.0f, 100.0f, 2);
-	skeleton.addComponent<SpriteComponent>("Skeleton", true, 7, 100);
+	skeleton.addComponent<TransformComponent>(400.0f, 300.0f, 64, 128, 2);
+	skeleton.addComponent<SpriteComponent>("Skeleton", true, 7, 100, true);
 	skeleton.addComponent<ColliderComponent>("Skeleton");
+	skeleton.addComponent<HealthComponent>(100, false);
 	skeleton.addGroup(Enemies);
 
 	skeletonArcher.setName("Skeleton Archer");
-	skeletonArcher.addComponent<TransformComponent>(300.0f, 150.0f, 2);
-	skeletonArcher.addComponent<SpriteComponent>("Skeleton Archer", true, 7, 100);
+	skeletonArcher.addComponent<TransformComponent>(500.0f, 150.0f, 64, 128, 2);
+	skeletonArcher.addComponent<SpriteComponent>("Skeleton Archer", true, 7, 100, true);
 	skeletonArcher.addComponent<ColliderComponent>("Skeleton Archer");
+	skeletonArcher.addComponent<HealthComponent>(100, false);
 	skeletonArcher.addGroup(Enemies);
 
 	player.setName("Player");
-	player.addComponent<TransformComponent>(1.2f);
+	player.addComponent<TransformComponent>(1.4f);
 	player.addComponent<SpriteComponent>("Player", true);
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("Player");
+	player.addComponent<HealthComponent>(100, true);
 	player.addGroup(Players);
 
 
