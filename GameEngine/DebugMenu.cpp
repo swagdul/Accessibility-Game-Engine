@@ -11,7 +11,7 @@
 extern Manager g_manager;
 
 DebugMenu::DebugMenu(Game* game, SDL_Renderer* renderer)
-	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0)
+	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0), m_state(DebugMenuState::MainMenu)
 {
 	m_menuOptions.push_back("List Entities");
 	m_menuOptions.push_back("Create Entities");
@@ -23,16 +23,95 @@ DebugMenu::DebugMenu(Game* game, SDL_Renderer* renderer)
 
 DebugMenu::~DebugMenu()
 {
+	ClearLogMessages();
 }
 
 void DebugMenu::AddLogMessage(const std::string& message)
 {
 	m_logMessages.push_back(message);
 
-	if (m_logMessages.size() > 5)
+	if (m_logMessages.size() > 10)
 	{
 		m_logMessages.erase(m_logMessages.begin());
 	}
+}
+
+void DebugMenu::ClearLogMessages()
+{
+	m_logMessages.clear();
+}
+
+std::string DebugMenu::TextInput()
+{
+	SDL_StartTextInput();
+	std::string textInput;
+	bool done = false;
+
+	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 24);
+	if (!font) {
+		std::cerr << "DebugMenu::TextInput: Failed to load font: " << TTF_GetError() << std::endl;
+		return "";
+	}
+
+	SDL_Color textColour = { 255, 255, 255, 255 };
+
+	int windowWidth = 0, windowHeight = 0;
+	SDL_GetRendererOutputSize(m_renderer, &windowWidth, &windowHeight);
+
+	const int inputAreaHeight = 80;
+
+	while (!done)
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT)
+			{
+				done = true;
+			}
+			else if (event.type == SDL_TEXTINPUT)
+			{
+				textInput += event.text.text;
+			}
+			else if (event.type == SDL_KEYDOWN)
+			{
+				if (event.key.keysym.sym == SDLK_RETURN)
+				{
+					done = true;
+				}
+				else if (event.key.keysym.sym == SDLK_BACKSPACE && !textInput.empty())
+				{
+					textInput.pop_back();
+				}
+			}
+		}
+
+		RenderSubMenu();
+
+		SDL_Rect inpuytRect = { 0, windowHeight - inputAreaHeight, windowWidth, inputAreaHeight };
+		SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 150);
+		SDL_RenderFillRect(m_renderer, &inpuytRect);
+
+		DrawText(m_renderer, "Enter Text: ", 50, 500, font, textColour);
+		DrawText(m_renderer, textInput, 50, 550, font, textColour);
+
+		SDL_RenderPresent(m_renderer);
+		SDL_Delay(16);
+	}
+
+	SDL_StopTextInput();
+	TTF_CloseFont(font);
+
+	return textInput;
+}
+
+void DebugMenu::AddTextToMenu(std::string text)
+{
+	AddLogMessage(text);
+	RenderSubMenu();
+	SDL_RenderPresent(m_renderer);
+	ScreenReader::Speak(text);
 }
 
 void DebugMenu::Run()
@@ -45,7 +124,7 @@ void DebugMenu::Run()
 		{
 			HandleEvent(event);
 		}
-		Render();
+		RenderMainMenu();
 	}
 }
 
@@ -96,7 +175,9 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 			}
 			else if (m_menuOptions[m_selectedIndex] == "Create Entities")
 			{
+				m_state = DebugMenuState::CreateEntity;
 				CreateEntity();
+				m_state = DebugMenuState::MainMenu;
 			}
 			else if (m_menuOptions[m_selectedIndex] == "Modify Entities")
 			{
@@ -117,14 +198,13 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 	}
 }
 
-void DebugMenu::Render()
+void DebugMenu::RenderMainMenu()
 {
 	int windowWidth = 0, windowHeight = 0;
 	SDL_GetRendererOutputSize(m_renderer, &windowWidth, &windowHeight);
 
 	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 150);
-	//SDL_RenderClear(m_renderer);
 	SDL_RenderFillRect(m_renderer, nullptr);
 
 	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 24);
@@ -171,203 +251,173 @@ void DebugMenu::Render()
 	TTF_CloseFont(font);
 }
 
-void DebugMenu::RenderSubMenu(const std::string& title)
+void DebugMenu::RenderSubMenu()
 {
 	int windowWidth = 0, windowHeight = 0;
 	SDL_GetRendererOutputSize(m_renderer, &windowWidth, &windowHeight);
 
-	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 250);
-	SDL_Rect modalRect = { windowWidth / 4, windowHeight / 4, windowWidth / 2, windowHeight / 2 };
-	SDL_RenderFillRect(m_renderer, &modalRect);
+	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_NONE);
+	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 150);
+	SDL_RenderFillRect(m_renderer, nullptr);
 
-	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 28);
-	if (font) {
-		SDL_Color titleColor = { 255, 255, 255, 255 };
-		DrawText(m_renderer, title, modalRect.x + 20, modalRect.y + 20, font, titleColor);
-		TTF_CloseFont(font);
+	SDL_Color messageColor = { 200, 200, 200, 255 };
+	int msgY = 20;
+
+	TTF_Font* smallFont = TTF_OpenFont("Assets/arial.ttf", 24);
+	if (smallFont)
+	{
+		for (size_t i = 0; i < m_logMessages.size(); ++i) {
+			DrawText(m_renderer, m_logMessages[i], 20, msgY + static_cast<int>(i) * 30, smallFont, messageColor);
+		}
 	}
+
 	SDL_RenderPresent(m_renderer);
+
+	TTF_CloseFont(smallFont);
 }
 
 void DebugMenu::CreateEntity()
 {
-	m_logMessages.clear();
-	RenderSubMenu("Create Entity");
-	AddLogMessage("Create Entity");
+	ClearLogMessages();
 
-	Render();
+	RenderSubMenu();
 	SDL_RenderPresent(m_renderer);
 
-	std::cout << "Creating new entity..." << std::endl;
-	AddLogMessage("Creating new entity.");
-	Render();
-	SDL_RenderPresent(m_renderer);
-	ScreenReader::Speak("Creating new entity.");
+	AddTextToMenu("Creating new entity.");
 
-	//std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	std::cout << "Entity enter name: ";
-	AddLogMessage("Enter the name of the entity.");
-	Render();
-	SDL_RenderPresent(m_renderer);
-	ScreenReader::Speak("Enter the name of the entity.");
-	std::string name;
-	std::getline(std::cin, name);
-	if (name.empty())
-	{
-		name = "Unnamed";
-	}
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//Prompt to add name and group
+	/////////////////////////////////////////////////////////////////////////////////////////
 
+	AddTextToMenu("Enter the name of the entity.");
+	std::string name = TextInput();
 	Entity& newEntity = g_manager.addEntity();
 	newEntity.setName(name);
-	std::cout << "Entity \"" << name << "\" created." << std::endl;
-	AddLogMessage("Entity \"" + name + "\" created.");
-	Render();
-	SDL_RenderPresent(m_renderer);
-	ScreenReader::Speak("Entity created with name " + name);
-
-	std::cout << "What group would you like to add this Entity to?" << std::endl;
-	AddLogMessage("What group would you like to add this Entity to?");
-	Render();
-	SDL_RenderPresent(m_renderer);
-	ScreenReader::Speak("What group would you like to add this Entity to?");
+	AddTextToMenu("Entity \"" + name + "\" created.");
+	AddTextToMenu("What group would you like to add this Entity to?");
 
 	//Currently hardcoding, adapt later 
-	std::cout << "Available groups:" << std::endl;
-	std::cout << "0: Enemies" << std::endl;
-	std::cout << "1: Players" << std::endl;
-	std::cout << "2: Maps" << std::endl;
-	std::cout << "3: Colliders" << std::endl;
-	std::cout << "4: Objects" << std::endl;
-	std::cout << "5: Projectiles" << std::endl;
+	AddTextToMenu("Available groups.");
+	AddTextToMenu("Select 0 for Enemies.");
+	AddTextToMenu("Select 1 for Players.");
+	AddTextToMenu("Select 2 for Maps.");
+	AddTextToMenu("Select 3 for Colliders.");
+	AddTextToMenu("Select 4 for Objects.");
+	AddTextToMenu("Select 5 for Projectiles.");
 
-	AddLogMessage("Available groups.");
-	AddLogMessage("Select 0 for Enemies.");	
-	AddLogMessage("Select 1 for Players.");
-	AddLogMessage("Select 2 for Maps.");
-	AddLogMessage("Select 3 for Colliders.");
-	AddLogMessage("Select 4 for Objects.");
-	AddLogMessage("Select 5 for Projectiles.");
-
-	Render();
-	SDL_RenderPresent(m_renderer);
-
-	ScreenReader::Speak("Available groups.");
-	ScreenReader::Speak("Select 0 for Enemies.");
-	ScreenReader::Speak("Select 1 for Players.");
-	ScreenReader::Speak("Select 2 for Maps.");
-	ScreenReader::Speak("Select 3 for Colliders.");
-	ScreenReader::Speak("Select 4 for Objects.");
-	ScreenReader::Speak("Select 5 for Projectiles.");
-
-	int groupChoice;
-	std::cin >> groupChoice;
+	int groupChoice = std::stoi(TextInput());
 
 	if (groupChoice < 0 || groupChoice > 5)
 	{
-		ScreenReader::Speak("Invalid group choice. Defaulting to Object");
-		std::cout << "Invalid group choice. Defaulting to Object" << std::endl;
-		AddLogMessage("Invalid group choice. Defaulting to Object");
-		Render();
-		SDL_RenderPresent(m_renderer);
+		AddTextToMenu("Invalid group choice. Defaulting to Object.");
 		groupChoice = 0; //defualt to enemy
 		return;
 	}
 
 	newEntity.addGroup(groupChoice);
 
-
+	/////////////////////////////////////////////////////////////////////////////////////////
 	//Prompt to add TransformComponent
-	std::cout << "Add a TransformComponent? (1 for yes, 0 for no): ";
-	AddLogMessage("Add a TransformComponent? (1 for yes, 0 for no): ");
-	ScreenReader::Speak("Would you like to add a TransformComponent? Press 1 for yes or 0 for no.");
-	Render();
-	SDL_RenderPresent(m_renderer);
-	int addTransform = 0;
-	std::cin >> addTransform;
+	/////////////////////////////////////////////////////////////////////////////////////////
+
+	AddTextToMenu("Add a TransformComponent? (1 for yes, 0 for no): ");
+
+	int addTransform = std::stoi(TextInput());
+
 	if (addTransform == 1)
 	{
 		float xPos = 0.0f, yPos = 0.0f, scale = 1.0f;
 		int height = 128, width = 128;
 
-		std::cout << "Enter X position (float): ";
-		AddLogMessage("Enter X position (float): ");
-		ScreenReader::Speak("Enter the X position as a float.");
-		Render();
-		SDL_RenderPresent(m_renderer);
-		std::cin >> xPos;
+		AddTextToMenu("Enter X position (float): ");
+		xPos = std::stof(TextInput());
 
-		std::cout << "Enter Y position (float): ";
-		AddLogMessage("Enter Y position (float): ");
-		ScreenReader::Speak("Enter the Y position as a float.");
-		Render();
-		SDL_RenderPresent(m_renderer);
-		std::cin >> yPos;
+		AddTextToMenu("Enter Y position (float): ");
+		yPos = std::stof(TextInput());
 
-		std::cout << "Enter height (int): ";
-		AddLogMessage("Enter height (int): ");
-		ScreenReader::Speak("Enter the height as an integer.");
-		Render();
-		SDL_RenderPresent(m_renderer);
-		std::cin >> height;
+		AddTextToMenu("Enter height (int): ");
+		height = std::stoi(TextInput());
 
-		std::cout << "Enter width (int): ";
-		AddLogMessage("Enter width (int): ");
-		ScreenReader::Speak("Enter the width as an integer.");
-		Render();
-		SDL_RenderPresent(m_renderer);
-		std::cin >> width;
+		AddTextToMenu("Enter width (int): ");
+		width = std::stoi(TextInput());
 
-		std::cout << "Enter scale (float): ";
-		AddLogMessage("Enter scale (float): ");
-		ScreenReader::Speak("Enter the scale as a float.");
-		Render();
-		SDL_RenderPresent(m_renderer);
-		std::cin >> scale;
+		AddTextToMenu("Enter scale (float): ");
+		scale = std::stof(TextInput());	
 
 		newEntity.addComponent<TransformComponent>(xPos, yPos, height, width, scale);
-		std::cout << "Transform component added." << std::endl;
-		AddLogMessage("Transform component added.");
-		ScreenReader::Speak("Transform component added.");
-		Render();
-		SDL_RenderPresent(m_renderer);
+		AddTextToMenu("Transform component added.");
 	}
 
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//Prompt to add SpriteComponent	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	
+	AddTextToMenu("Add a SpriteComponent? (1 for yes, 0 for no): ");
 
-	//Prompt to add SpriteComponent
-	std::cout << "Would you like to add a SpriteComponent? (1 for yes, 0 for no): ";
-	ScreenReader::Speak("Would you like to add a SpriteComponent? Press 1 for yes or 0 for no.");
-	int addSprite = 0;
-	std::cin >> addSprite;
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	int addSprite = std::stoi(TextInput());
+
 	if (addSprite == 1)
 	{
 		std::string textureID;
 		bool animated = false;
 
-		std::cout << "Enter texture ID: " << std::endl;
-		std::cout << "Alternatively, press enter to use the default texture ID." << std::endl;
-		ScreenReader::Speak("Enter the texture ID.");
-		ScreenReader::Speak("Alternatively, press enter to use the default texture ID.");
-		std::getline(std::cin, textureID);
+		AddTextToMenu("Enter texture ID: ");
+		AddTextToMenu("Alternatively, press enter to use the default texture ID.");
+
+		textureID = TextInput();
+
 		if (textureID.empty())
 		{
 			textureID = "DefaultTexture";
 		}
 
-		std::cout << "Is the sprite animated? (1 for yes, 0 for no): ";
-		ScreenReader::Speak("Is the sprite animated? Press 1 for yes or 0 for no.");
-		std::cin >> animated;
+		AddTextToMenu("Is the sprite animated? (1 for yes, 0 for no): ");
+		animated = std::stoi(TextInput());
 
 		newEntity.addComponent<SpriteComponent>(textureID, animated);
-		ScreenReader::Speak("Sprite component added.");
-		std::cout << "Sprite component added." << std::endl;
+		AddTextToMenu("Sprite component added.");
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//Prompt to add ColliderComponent
+	/////////////////////////////////////////////////////////////////////////////////////////
+
+	AddTextToMenu("Add a ColliderComponent? (1 for yes, 0 for no): ");
+
+	int addCollider = std::stoi(TextInput());
+
+	if (addCollider == 1)
+	{
+		std::string colliderTag;
+		AddTextToMenu("Enter collider tag: ");
+		colliderTag = TextInput();
+		newEntity.addComponent<ColliderComponent>(colliderTag);
+		AddTextToMenu("Collider component added.");
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//Prompt to add HealthComponent
+	/////////////////////////////////////////////////////////////////////////////////////////
+
+	AddTextToMenu("Add a HealthComponent? (1 for yes, 0 for no): ");
+
+	int addHealth = std::stoi(TextInput());
+
+	if (addHealth == 1)
+	{
+		int health = 100;
+		bool isPlayer = false;
+		AddTextToMenu("Enter health (int): ");
+		health = std::stoi(TextInput());
+		AddTextToMenu("Is this a player entity? (1 for yes, 0 for no): ");
+		isPlayer = std::stoi(TextInput());
+		newEntity.addComponent<HealthComponent>(health, isPlayer);
+		AddTextToMenu("Health component added.");
 	}
 
 	g_manager.refresh();
-
 	std::this_thread::sleep_for(std::chrono::seconds(2));
+	ClearLogMessages();
 }
 
 void DebugMenu::ModifyEntity()
@@ -376,93 +426,64 @@ void DebugMenu::ModifyEntity()
 
 	if (entities.empty())
 	{
-		ScreenReader::Speak("No entities available to modify.");
-		std::cout << "No entities available to modify." << std::endl;
+		AddTextToMenu("No entities available to modify.");
 		std::this_thread::sleep_for(std::chrono::seconds(2));
 		return;
 	}
 
-	std::cout << "Available entities:" << std::endl;
+	AddTextToMenu("Available entities:");
 	for (size_t i = 0; i < entities.size(); i++) {
-		std::cout << i << ": " << entities[i]->getName() << std::endl;
+		if (entities[i]->getName() != "Unnamed")
+		{
+			AddTextToMenu("Entity " + std::to_string(i) + ": " + entities[i]->getName());
+		}
 	}
 
-	std::cout << "Enter the index of the entity to modify: ";
-	int entityIndex;
-	std::cin >> entityIndex;
+	AddTextToMenu("Enter the index of the entity to modify: ");
+	int entityIndex = std::stoi(TextInput());
 
 	if (entityIndex < 0 || entityIndex >= static_cast<int>(entities.size())) {
-		ScreenReader::Speak("Invalid entity index.");
-		std::cout << "Invalid entity index." << std::endl;
+		AddTextToMenu("Invalid entity index.");
 		return;
 	}
 
 	Entity* selectedEntity = entities[entityIndex];
 
-	std::cout << "Modification Options:" << std::endl;
-	std::cout << "1: Modify TransformComponent" << std::endl;
-	std::cout << "2: Modify SpriteComponent" << std::endl;
-	std::cout << "3: Add missing component" << std::endl;
-	std::cout << "Enter your choice: ";
+	AddTextToMenu("Modification Options:");
+	AddTextToMenu("1: Modify TransformComponent");
+	AddTextToMenu("2: Modify SpriteComponent");
+	AddTextToMenu("3: Modify ColliderComponent");
+	AddTextToMenu("4: Modify HealthComponent");
+	AddTextToMenu("5: Add missing component");
+	AddTextToMenu("Enter your choice: ");
 
-	int modChoice;
-	std::cin >> modChoice;
+	int modChoice = std::stoi(TextInput());
 
 	if (modChoice == 1)
 	{
 		if (selectedEntity->hasComponent<TransformComponent>())
 		{
 			TransformComponent& tc = selectedEntity->getComponent<TransformComponent>();
-			std::stringstream ss;
-			ss << "Current Position: (" << tc.m_position.m_x << ", " << tc.m_position.m_y << ")" << std::endl;
-			std::string xyPosition = ss.str();
-			std::cout << xyPosition << std::endl;
 
-			std::stringstream widthSS;
-			widthSS << "Current Width: " << tc.m_width << std::endl;
-			std::string widthStr = widthSS.str();
-			std::cout << widthStr;
+			AddTextToMenu("Current Position: (" + std::to_string(tc.m_position.m_x) + ", " + std::to_string(tc.m_position.m_y) + ")");
+			AddTextToMenu("Current Width: " + std::to_string(tc.m_width));
+			AddTextToMenu("Current Height: " + std::to_string(tc.m_height));
+			AddTextToMenu("Current Scale: " + std::to_string(tc.m_scale));
 
-			std::stringstream heightSS;
-			heightSS << "Current Height: " << tc.m_height << std::endl;
-			std::string heightStr = heightSS.str();
-			std::cout << heightStr;
+			AddTextToMenu("Enter new X position (float): ");
+			float newX = std::stof(TextInput());
 
-			std::stringstream scaleSS;
-			scaleSS << "Current Scale: " << tc.m_scale << std::endl;
-			std::string scaleStr = scaleSS.str();
-			std::cout << scaleStr;
+			AddTextToMenu("Enter new Y position (float): ");
+			float newY = std::stof(TextInput());
 
-			ScreenReader::Speak(xyPosition);
-			ScreenReader::Speak(widthStr);
-			ScreenReader::Speak(heightStr);
-			ScreenReader::Speak(scaleStr);
+			AddTextToMenu("Enter new width (int): ");
+			int newWidth = std::stoi(TextInput());
 
+			AddTextToMenu("Enter new height (int): ");
+			int newHeight = std::stoi(TextInput());
 
-			std::cout << "Enter new X position (float): ";
-			ScreenReader::Speak("Enter new X position as a float.");
-			float newX;
-			std::cin >> newX;
-
-			std::cout << "Enter new Y position (float): ";
-			ScreenReader::Speak("Enter new Y position as a float.");
-			float newY;
-			std::cin >> newY;
-
-			std::cout << "Enter new width (int): ";
-			ScreenReader::Speak("Enter new width as an integer.");
-			int newWidth;
-			std::cin >> newWidth;
-
-			std::cout << "Enter new height (int): ";
-			ScreenReader::Speak("Enter new height as an integer.");
-			int newHeight;
-			std::cin >> newHeight;
-
-			std::cout << "Enter new scale (float): ";
-			ScreenReader::Speak("Enter new scale as a float.");
-			float newScale;
-			std::cin >> newScale;
+			AddTextToMenu("Enter new scale (float): ");
+			float newScale = std::stof(TextInput());
 
 			tc.m_position.m_x = newX;
 			tc.m_position.m_y = newY;
@@ -470,13 +491,11 @@ void DebugMenu::ModifyEntity()
 			tc.m_height = newHeight;
 			tc.m_scale = newScale;
 
-			ScreenReader::Speak("Transform component modified.");
-			std::cout << "Transform component updated." << std::endl;
+			AddTextToMenu("Transform component updated.");
 		}
 		else
 		{
-			ScreenReader::Speak("Entity does not have a Transform component.");
-			std::cout << "Entity does not have a Transform component." << std::endl;
+			AddTextToMenu("Entity does not have a Transform component.");
 		}
 	}
 	else if (modChoice == 2)
@@ -485,127 +504,175 @@ void DebugMenu::ModifyEntity()
 		{
 			SpriteComponent& sc = selectedEntity->getComponent<SpriteComponent>();
 
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-			std::cout << "Enter new texture ID: ";
-			ScreenReader::Speak("Enter new texture ID.");
-			std::string newTexture;
-			std::cin >> newTexture;
-			std::getline(std::cin, newTexture);
+			AddTextToMenu("Enter new texture ID: ");
+			std::string newTexture = TextInput();
 			if (newTexture.empty())
 			{
 				newTexture = "DefaultTexture";
 			}
 			sc.setTexture(newTexture);
 
-			std::cout << "Is the sprite animated? (1 for yes, 0 for no): ";
-			ScreenReader::Speak("Is the sprite animated? Press 1 for yes or 0 for no.");
-			int isAnimated;
-			std::cin >> isAnimated;
+
+			AddTextToMenu("Is the sprite animated? (1 for yes, 0 for no): ");
+			int isAnimated = std::stoi(TextInput());
 			if (isAnimated == 1)
 			{
 				sc.enableAnimation();
 			}
 
-			ScreenReader::Speak("Sprite component modified.");
-			std::cout << "Sprite component updated." << std::endl;
+			AddTextToMenu("Sprite component updated.");
 		}
 		else
 		{
-			ScreenReader::Speak("Entity does not have a Sprite component.");
-			std::cout << "Entity does not have a Sprite component." << std::endl;
+			AddTextToMenu("Entity does not have a Sprite component.");
 		}
 	}
 	else if (modChoice == 3)
 	{
+		if (selectedEntity->hasComponent<ColliderComponent>())
+		{
+			ColliderComponent& cc = selectedEntity->getComponent<ColliderComponent>();
 
-		std::cout << "Select component to add:" << std::endl;
-		std::cout << "1: TransformComponent" << std::endl;
-		std::cout << "2: SpriteComponent" << std::endl;
+			AddTextToMenu("Add new tag: ");
+			std::string newTag = TextInput();
 
-		ScreenReader::Speak("Select component to add.");
-		ScreenReader::Speak("1 TransformComponent.");
-		ScreenReader::Speak("2 SpriteComponent.");
+			cc.m_tag = newTag;
 
-		int addChoice;
-		std::cin >> addChoice;
+			AddTextToMenu("Collider component updated.");
+		}
+		else
+		{
+			AddTextToMenu("Entity does not have a Collider component.");
+		}
+	}
+	else if (modChoice == 4)
+	{
+		if (selectedEntity->hasComponent<HealthComponent>())
+		{
+			HealthComponent& hc = selectedEntity->getComponent<HealthComponent>();
+
+			AddTextToMenu("Enter new health value: ");
+			int newHealth = std::stoi(TextInput());
+
+			AddTextToMenu("Make entity a player? (1 for yes, 0 for no): ");
+			bool isPlayer = std::stoi(TextInput());
+
+			hc.setMaxHealth(newHealth);
+			hc.isPlayer(isPlayer);
+
+			AddTextToMenu("Health component updated.");
+		}
+		else
+		{
+			AddTextToMenu("Entity does not have a Health component.");
+		}
+	}
+	else if (modChoice == 5)
+	{
+		AddTextToMenu("Select component to add: ");
+		AddTextToMenu("1: TransformComponent");
+		AddTextToMenu("2: SpriteComponent");
+		AddTextToMenu("3: ColliderComponent");
+		AddTextToMenu("4: HealthComponent");
+
+		int addChoice = std::stoi(TextInput());
 
 		if (addChoice == 1)
 		{
 			if (selectedEntity->hasComponent<TransformComponent>())
 			{
-				ScreenReader::Speak("Entity already has a Transform component.");
-				std::cout << "Entity already has a Transform component." << std::endl;
+				AddTextToMenu("Entity already has a Transform component.");
 			}
 			else
 			{
-				float xPos = 0.0f, yPos = 0.0f, scale = 1.0f;
-				int height = 128, width = 128;
+				AddTextToMenu("Enter X position (float): ");
+				float xPos = std::stof(TextInput());
 
-				std::cout << "Enter X position (float): ";
-				ScreenReader::Speak("Enter the X position as a float.");
-				std::cin >> xPos;
+				AddTextToMenu("Enter Y position (float): ");
+				float yPos = std::stof(TextInput());
 
-				std::cout << "Enter Y position (float): ";
-				ScreenReader::Speak("Enter the Y position as a float.");
-				std::cin >> yPos;
+				AddTextToMenu("Enter height (int): ");
+				int height = std::stoi(TextInput());
 
-				std::cout << "Enter height (int): ";
-				ScreenReader::Speak("Enter the height as an integer.");
-				std::cin >> height;
+				AddTextToMenu("Enter width (int): ");
+				int width = std::stoi(TextInput());
 
-				std::cout << "Enter width (int): ";
-				ScreenReader::Speak("Enter the width as an integer.");
-				std::cin >> width;
-
-				std::cout << "Enter scale (float): ";
-				ScreenReader::Speak("Enter the scale as a float.");
-				std::cin >> scale;
+				AddTextToMenu("Enter scale (float): ");
+				float scale = std::stof(TextInput());
 
 				selectedEntity->addComponent<TransformComponent>(xPos, yPos, height, width, scale);
-				ScreenReader::Speak("Transform component added.");
-				std::cout << "Transform component added." << std::endl;
+		
+				AddTextToMenu("Transform component added.");
 			}
 		}
 		else if (addChoice == 2)
 		{
 			if (selectedEntity->hasComponent<SpriteComponent>())
 			{
-				ScreenReader::Speak("Entity already has a Sprite component.");
-				std::cout << "Entity already has a Sprite component." << std::endl;
+				AddTextToMenu("Entity already has a Sprite component.");
 			}
 			else
 			{
-				std::string textureID;
-				bool animated = false;
+				AddTextToMenu("Enter texture ID: ");
+				AddTextToMenu("Alternatively, press enter to use the default texture ID.");
 
-				std::cout << "Enter texture ID: ";
-				std::cout << "Alternatively, press enter to use the default texture ID." << std::endl;
-				ScreenReader::Speak("Enter the texture ID.");
-				ScreenReader::Speak("Alternatively, press enter to use the default texture ID.");
-				std::getline(std::cin, textureID);
+				std::string textureID = TextInput();
 				if (textureID.empty())
 				{
 					textureID = "DefaultTexture";
 				}
 
-				std::cout << "Is the sprite animated? (1 for yes, 0 for no): ";
-				ScreenReader::Speak("Is the sprite animated? Press 1 for yes or 0 for no.");
-				std::cin >> animated;
+				AddTextToMenu("Is the sprite animated? (1 for yes, 0 for no): ");
+				int animated = std::stoi(TextInput());				
 
 				selectedEntity->addComponent<SpriteComponent>(textureID, animated);
-				ScreenReader::Speak("Sprite component added.");
-				std::cout << "Sprite component added." << std::endl;
+
+				AddTextToMenu("Sprite component added.");
+			}
+		}
+		else if (addChoice == 3)
+		{
+			if (selectedEntity->hasComponent<ColliderComponent>())
+			{
+				AddTextToMenu("Entity already has a Collider component.");
+			}
+			else
+			{
+				AddTextToMenu("Enter collider tag: ");
+				std::string colliderTag = TextInput();
+
+				selectedEntity->addComponent<ColliderComponent>(colliderTag);
+
+				AddTextToMenu("Collider component added.");
+			}
+		}
+		else if (addChoice == 4)
+		{
+			if (selectedEntity->hasComponent<HealthComponent>())
+			{
+				AddTextToMenu("Entity already has a Health component.");
+			}
+			else
+			{
+				AddTextToMenu("Enter health (int): ");
+				int health = std::stoi(TextInput());
+
+				AddTextToMenu("Is this a player entity? (1 for yes, 0 for no): ");
+				bool isPlayer = std::stoi(TextInput());
+
+				selectedEntity->addComponent<HealthComponent>(health, isPlayer);
+
+				AddTextToMenu("Health component added.");
 			}
 		}
 	}
 	else
 	{
-		ScreenReader::Speak("Invalid modification choice.");
-		std::cout << "Invalid modification choice." << std::endl;
+		AddTextToMenu("Invalid modification choice.");
 	}
 
 	g_manager.refresh();
+	ClearLogMessages();
 }
 
 
@@ -615,36 +682,34 @@ void DebugMenu::ListEntities()
 
 	if (entites.empty())
 	{
-		ScreenReader::Speak("No entities are present.");
-		std::cout << "No entities are present." << std::endl;
+		AddTextToMenu("No entities are present.");
 		std::this_thread::sleep_for(std::chrono::seconds(2));
 		return;
 	}
 
-	std::stringstream ss;
-	ss << "There are " << entites.size() << " entites.";
-	std::string totalStr = ss.str();
-	ScreenReader::Speak(totalStr);
-	std::cout << totalStr << std::endl;
+	int unnamedCount = 0;
+
+	AddTextToMenu("There are " + std::to_string(entites.size()) + " entities.");
 
 	for (size_t i = 0; i < entites.size(); i++)
 	{
 		std::stringstream entityInfo;
 		std::string name = entites[i]->getName();
-		if (name.empty() || name == "Unnamed")
+		if (!name.empty() && name != "Unnamed")
 		{
-			entityInfo << "Entity " << i << " is " << (entites[i]->isActive() ? "active" : "inactive") << ".";
+			entityInfo << "Entity " << name << " is " << (entites[i]->isActive() ? "active" : "inactive") << ".";
+			AddTextToMenu(entityInfo.str());
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 		else
 		{
-			entityInfo << "Entity " << name << " is " << (entites[i]->isActive() ? "active" : "inactive") << ".";
+			unnamedCount++;
 		}
-		std::string infoString = entityInfo.str();
-		ScreenReader::Speak(infoString);
-		std::cout << infoString << std::endl;
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
+
+	AddTextToMenu("There are " + std::to_string(unnamedCount) + " other unnamed entities.");
+
+	ClearLogMessages();
 
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }

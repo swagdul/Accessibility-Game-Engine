@@ -21,6 +21,9 @@ public:
 	~DebugMenu();
 
 	void AddLogMessage(const std::string& message);
+	void ClearLogMessages();
+	std::string TextInput();
+	void AddTextToMenu(std::string text);
 	void Run();
 
 private:
@@ -28,17 +31,20 @@ private:
 	SDL_Renderer* m_renderer;
 	bool m_isRunning;
 	int m_selectedIndex;
+	DebugMenuState m_state;
 
 	std::vector<std::string> m_menuOptions;
 	std::vector<std::string> m_logMessages;
 
-	void Render();
-	void RenderSubMenu(const std::string& title);
+	void RenderMainMenu();
+	void RenderSubMenu();
 	void HandleEvent(SDL_Event& event);
 
 	void CreateEntity();
 	void ModifyEntity();
 	void ListEntities();
+
+	void ProcessMainMenuSelection();
 
 };
 
