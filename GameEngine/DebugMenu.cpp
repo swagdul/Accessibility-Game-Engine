@@ -11,11 +11,16 @@
 extern Manager g_manager;
 
 DebugMenu::DebugMenu(Game* game, SDL_Renderer* renderer)
-	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0), m_state(DebugMenuState::MainMenu)
+	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0), m_state(DebugMenuState::MainMenu), m_fontSize(24)
 {
+
+	m_normalColour = { 255, 255, 255, 255 };
+	m_highlightColour = { 255, 0, 0, 255 };
+
 	m_menuOptions.push_back("List Entities");
 	m_menuOptions.push_back("Create Entities");
 	m_menuOptions.push_back("Modify Entities");
+	m_menuOptions.push_back("Adjust Appearance");
 	m_menuOptions.push_back("Exit Menu");
 
 	ScreenReader::Speak(m_menuOptions[m_selectedIndex]);
@@ -47,13 +52,11 @@ std::string DebugMenu::TextInput()
 	std::string textInput;
 	bool done = false;
 
-	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 24);
+	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", m_fontSize);
 	if (!font) {
 		std::cerr << "DebugMenu::TextInput: Failed to load font: " << TTF_GetError() << std::endl;
 		return "";
 	}
-
-	SDL_Color textColour = { 255, 255, 255, 255 };
 
 	int windowWidth = 0, windowHeight = 0;
 	SDL_GetRendererOutputSize(m_renderer, &windowWidth, &windowHeight);
@@ -93,8 +96,8 @@ std::string DebugMenu::TextInput()
 		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 150);
 		SDL_RenderFillRect(m_renderer, &inpuytRect);
 
-		DrawText(m_renderer, "Enter Text: ", 50, 500, font, textColour);
-		DrawText(m_renderer, textInput, 50, 550, font, textColour);
+		DrawText(m_renderer, "Enter Text: ", 50, 500, font, m_normalColour);
+		DrawText(m_renderer, textInput, 50, 550, font, m_normalColour);
 
 		SDL_RenderPresent(m_renderer);
 		SDL_Delay(16);
@@ -183,6 +186,10 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 			{
 				ModifyEntity();
 			}
+			else if (m_menuOptions[m_selectedIndex] == "Adjust Appearance")
+			{
+				AdjustAppeareance();
+			}
 			else if (m_menuOptions[m_selectedIndex] == "Exit Menu")
 			{
 				m_isRunning = false;
@@ -207,21 +214,18 @@ void DebugMenu::RenderMainMenu()
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 150);
 	SDL_RenderFillRect(m_renderer, nullptr);
 
-	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", 24);
+	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", m_fontSize);
 	if (!font) {
 		std::cerr << "DebugMenu::Render: Failed to load font: " << TTF_GetError() << std::endl;
 		return;
 	}
-
-	SDL_Color normalColor = { 255, 255, 255, 255 };
-	SDL_Color highlightColor = { 255, 0, 0, 255 };
 
 	int startY = 100;
 	int spacingY = 50;
 
 	for (size_t i = 0; i < m_menuOptions.size(); i++)
 	{
-		SDL_Color color = (static_cast<int>(i) == m_selectedIndex) ? highlightColor : normalColor;
+		SDL_Color color = (static_cast<int>(i) == m_selectedIndex) ? m_highlightColour : m_normalColour;
 
 		SDL_Surface* textSurface = TTF_RenderText_Blended(font, m_menuOptions[i].c_str(), color);
 		SDL_Texture* textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
@@ -243,7 +247,7 @@ void DebugMenu::RenderMainMenu()
 
 	for (size_t i = 0; i < m_logMessages.size(); ++i)
 	{
-		DrawText(m_renderer, m_logMessages[i], 100, logStartY + static_cast<int>(i) * logSpacingY, font, normalColor);
+		DrawText(m_renderer, m_logMessages[i], 100, logStartY + static_cast<int>(i) * logSpacingY, font, m_normalColour);
 	}
 
 	SDL_RenderPresent(m_renderer);
@@ -260,14 +264,14 @@ void DebugMenu::RenderSubMenu()
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 150);
 	SDL_RenderFillRect(m_renderer, nullptr);
 
-	SDL_Color messageColor = { 200, 200, 200, 255 };
+	//SDL_Color messageColor = { 200, 200, 200, 255 };
 	int msgY = 20;
 
 	TTF_Font* smallFont = TTF_OpenFont("Assets/arial.ttf", 24);
 	if (smallFont)
 	{
 		for (size_t i = 0; i < m_logMessages.size(); ++i) {
-			DrawText(m_renderer, m_logMessages[i], 20, msgY + static_cast<int>(i) * 30, smallFont, messageColor);
+			DrawText(m_renderer, m_logMessages[i], 20, msgY + static_cast<int>(i) * 30, smallFont, m_normalColour);
 		}
 	}
 
@@ -279,9 +283,6 @@ void DebugMenu::RenderSubMenu()
 void DebugMenu::CreateEntity()
 {
 	ClearLogMessages();
-
-	RenderSubMenu();
-	SDL_RenderPresent(m_renderer);
 
 	AddTextToMenu("Creating new entity.");
 
@@ -422,6 +423,7 @@ void DebugMenu::CreateEntity()
 
 void DebugMenu::ModifyEntity()
 {
+	ClearLogMessages();
 	std::vector<Entity*> entities = g_manager.getEntities();
 
 	if (entities.empty())
@@ -558,7 +560,7 @@ void DebugMenu::ModifyEntity()
 			bool isPlayer = std::stoi(TextInput());
 
 			hc.setMaxHealth(newHealth);
-			hc.isPlayer(isPlayer);
+			hc.setIfPlayer(isPlayer);
 
 			AddTextToMenu("Health component updated.");
 		}
@@ -678,6 +680,7 @@ void DebugMenu::ModifyEntity()
 
 void DebugMenu::ListEntities()
 {
+	ClearLogMessages();
 	std::vector<Entity*> entites = g_manager.getEntities();
 
 	if (entites.empty())
@@ -712,6 +715,70 @@ void DebugMenu::ListEntities()
 	ClearLogMessages();
 
 	std::this_thread::sleep_for(std::chrono::seconds(2));
+}
+
+void DebugMenu::AdjustAppeareance()
+{
+	ClearLogMessages();
+	
+	AddTextToMenu("Adjusting appearance.");
+
+	AddTextToMenu("Do you want to change the text colour? (1 for yes, 0 for no): ");
+	int changeColour = std::stoi(TextInput());
+
+	if (changeColour == 1)
+	{
+		int r = 0, g = 0, b = 0, a = 0;
+
+		AddTextToMenu("Enter red value (0-255): ");
+		r = std::stoi(TextInput());
+
+		AddTextToMenu("Enter green value (0-255): ");
+		g = std::stoi(TextInput());
+
+		AddTextToMenu("Enter blue value (0-255): ");
+		b = std::stoi(TextInput());
+
+		AddTextToMenu("Enter alpha value (0-255): ");
+		a = std::stoi(TextInput());
+
+		m_normalColour = { static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a) };
+	}
+
+	AddTextToMenu("Do you want to change the highlight colour? (1 for yes, 0 for no): ");
+	int changeHighlight = std::stoi(TextInput());
+
+	if (changeHighlight == 1)
+	{
+		int r = 0, g = 0, b = 0, a = 0;
+
+		AddTextToMenu("Enter red value (0-255): ");
+		r = std::stoi(TextInput());
+
+		AddTextToMenu("Enter green value (0-255): ");
+		g = std::stoi(TextInput());
+
+		AddTextToMenu("Enter blue value (0-255): ");
+		b = std::stoi(TextInput());
+
+		AddTextToMenu("Enter alpha value (0-255): ");
+		a = std::stoi(TextInput());
+
+		m_highlightColour = { static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a) };
+	}
+
+	AddTextToMenu("Do you want to change the font size? (1 for yes, 0 for no): ");	
+	int changeFontSize = std::stoi(TextInput());
+
+	if (changeFontSize == 1)
+	{
+		AddTextToMenu("Enter new font size: ");
+		m_fontSize = std::stoi(TextInput());
+	}
+
+	g_manager.refresh();
+	std::this_thread::sleep_for(std::chrono::seconds(2));
+	ClearLogMessages();
 }
 
 

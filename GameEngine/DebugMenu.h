@@ -10,7 +10,8 @@ enum class DebugMenuState
 	MainMenu,
 	ListEntities,
 	CreateEntity,
-	ModifyEntity
+	ModifyEntity,
+	AdjustAppearance
 };
 
 class DebugMenu
@@ -33,6 +34,10 @@ private:
 	int m_selectedIndex;
 	DebugMenuState m_state;
 
+	int m_fontSize;
+	SDL_Color m_normalColour;
+	SDL_Color m_highlightColour;
+
 	std::vector<std::string> m_menuOptions;
 	std::vector<std::string> m_logMessages;
 
@@ -43,8 +48,6 @@ private:
 	void CreateEntity();
 	void ModifyEntity();
 	void ListEntities();
-
-	void ProcessMainMenuSelection();
-
+	void AdjustAppeareance();
 };
 

@@ -16,5 +16,4 @@ struct Animation
 		m_frames = frames;
 		m_speed = speed;
 	}
-
 };

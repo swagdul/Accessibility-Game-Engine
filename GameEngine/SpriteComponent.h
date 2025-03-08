@@ -14,6 +14,7 @@ public:
 	int m_animationIndex = 0;
 
 	std::map<const char*, Animation> m_animations;
+	//std::map<std::string, Animation> m_animations;
 
 	SDL_RendererFlip m_spriteFlip = SDL_FLIP_NONE;
 
@@ -63,11 +64,22 @@ public:
 	void setTexture(std::string textureId)
 	{
 		m_texture = Game::m_assets->GetTexture(textureId);
+		m_textureID = textureId;
+	}
+
+	std::string getTextureID()
+	{
+		return m_textureID;
 	}
 
 	void enableAnimation()
 	{
 		m_isAnimated = true;
+	}
+
+	bool isAnimated()
+	{
+		return m_isAnimated;
 	}
 
 	void init() override
@@ -113,5 +125,7 @@ private:
 	bool m_isAnimated = false;
 	int m_frames = 0;
 	int m_speed = 100;
+
+	std::string m_textureID;
 
 };

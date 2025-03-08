@@ -8,6 +8,7 @@
 #include "AccessibilityManager.h"
 #include "MenuSystem.h"
 #include "DebugMenu.h"
+#include "SaveLoad.h"
 #include <sstream>
 
 Map* g_map;
@@ -130,6 +131,8 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 	label.addComponent<UILabel>(10, 10, "Label", "Arial", white);
 
 	m_assets->CreateProjectile(Vector2D(500, 500), Vector2D(2, 0), 200, 2, "Projectile");
+
+	LoadEntities("entities.json");
 }
 
 auto& tiles(g_manager.getGroup(Game::Maps));
@@ -235,6 +238,9 @@ void Game::render()
 
 void Game::clean()
 {
+	std::vector<Entity*> entities = g_manager.getEntities();
+	SaveEntities(entities, "entities.json");
+
 	SDL_DestroyWindow(m_window);
 	SDL_DestroyRenderer(m_renderer);
 	SDL_Quit();

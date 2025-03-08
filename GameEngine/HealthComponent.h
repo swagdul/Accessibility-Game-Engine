@@ -87,9 +87,14 @@ public:
 		}
 	}
 
-	int getHealth()
+	int getCurrentHealth()
 	{
 		return m_currentHealth;
+	}
+
+	int getMaxHealth()
+	{
+		return m_maxHealth;
 	}
 
 	void setCurrentHealth(int health)
@@ -102,9 +107,14 @@ public:
 		m_maxHealth = health;
 	}
 
-	void isPlayer(bool isPlayer)
+	void setIfPlayer(bool isPlayer)
 	{
 		m_isPlayer = isPlayer;
+	}
+
+	bool isPlayer()
+	{
+		return m_isPlayer;
 	}
 
 private:
