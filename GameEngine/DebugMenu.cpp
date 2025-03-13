@@ -109,6 +109,28 @@ std::string DebugMenu::TextInput()
 	return textInput;
 }
 
+int DebugMenu::GetIntInput() {
+	std::string input = TextInput(); 
+	try {
+		return std::stoi(input);
+	}
+	catch (...) {
+		AddTextToMenu("Invalid input. Using default value 0.");
+		return 0;
+	}
+}
+
+float DebugMenu::GetFloatInput() {
+	std::string input = TextInput();
+	try {
+		return std::stof(input);
+	}
+	catch (...) {
+		AddTextToMenu("Invalid input. Using default value 0.0.");
+		return 0.0f;
+	}
+}
+
 void DebugMenu::AddTextToMenu(std::string text)
 {
 	AddLogMessage(text);
@@ -188,7 +210,7 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 			}
 			else if (m_menuOptions[m_selectedIndex] == "Adjust Appearance")
 			{
-				AdjustAppeareance();
+				AdjustAppearance();
 			}
 			else if (m_menuOptions[m_selectedIndex] == "Exit Menu")
 			{
@@ -294,11 +316,12 @@ void DebugMenu::CreateEntity()
 	std::string name = TextInput();
 	Entity& newEntity = g_manager.addEntity();
 	newEntity.setName(name);
+	newEntity.setDebugCreated(true);
 	AddTextToMenu("Entity \"" + name + "\" created.");
 	AddTextToMenu("What group would you like to add this Entity to?");
 
 	//Currently hardcoding, adapt later 
-	AddTextToMenu("Available groups.");
+	AddTextToMenu("Available groups:");
 	AddTextToMenu("Select 0 for Enemies.");
 	AddTextToMenu("Select 1 for Players.");
 	AddTextToMenu("Select 2 for Maps.");
@@ -306,7 +329,7 @@ void DebugMenu::CreateEntity()
 	AddTextToMenu("Select 4 for Objects.");
 	AddTextToMenu("Select 5 for Projectiles.");
 
-	int groupChoice = std::stoi(TextInput());
+	int groupChoice = GetIntInput();
 
 	if (groupChoice < 0 || groupChoice > 5)
 	{
@@ -321,63 +344,66 @@ void DebugMenu::CreateEntity()
 	//Prompt to add TransformComponent
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	AddTextToMenu("Add a TransformComponent? (1 for yes, 0 for no): ");
+	AddTextToMenu("Adding TransformComponent.");
+	AddTextToMenu("This will give the entity a position, height, width, and scale.");
+	AddTextToMenu("The height and width will be based on the texture.");
 
-	int addTransform = std::stoi(TextInput());
+	float xPos = 0.0f, yPos = 0.0f, scale = 1.0f;
+	int height = 128, width = 128;
 
-	if (addTransform == 1)
-	{
-		float xPos = 0.0f, yPos = 0.0f, scale = 1.0f;
-		int height = 128, width = 128;
+	AddTextToMenu("Enter X position (float): ");
+	xPos = GetFloatInput();
 
-		AddTextToMenu("Enter X position (float): ");
-		xPos = std::stof(TextInput());
+	AddTextToMenu("Enter Y position (float): ");
+	yPos = GetFloatInput();
 
-		AddTextToMenu("Enter Y position (float): ");
-		yPos = std::stof(TextInput());
+	AddTextToMenu("Enter height (int): ");
+	height = GetIntInput();
 
-		AddTextToMenu("Enter height (int): ");
-		height = std::stoi(TextInput());
+	AddTextToMenu("Enter width (int): ");
+	width = GetIntInput();
 
-		AddTextToMenu("Enter width (int): ");
-		width = std::stoi(TextInput());
+	AddTextToMenu("Enter scale (float): ");
+	scale = GetFloatInput();
 
-		AddTextToMenu("Enter scale (float): ");
-		scale = std::stof(TextInput());	
-
-		newEntity.addComponent<TransformComponent>(xPos, yPos, height, width, scale);
-		AddTextToMenu("Transform component added.");
-	}
+	newEntity.addComponent<TransformComponent>(xPos, yPos, height, width, scale);
+	AddTextToMenu("Transform component added.");
+	
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//Prompt to add SpriteComponent	
 	/////////////////////////////////////////////////////////////////////////////////////////
 	
-	AddTextToMenu("Add a SpriteComponent? (1 for yes, 0 for no): ");
+	AddTextToMenu("Adding a SpriteComponent.");
 
-	int addSprite = std::stoi(TextInput());
+	std::string textureID;
+	bool animated = false;
 
-	if (addSprite == 1)
+	AddTextToMenu("Enter texture ID: ");
+	AddTextToMenu("Alternatively, press enter to use the default texture ID.");
+
+	textureID = TextInput();
+
+	if (textureID.empty())
 	{
-		std::string textureID;
-		bool animated = false;
-
-		AddTextToMenu("Enter texture ID: ");
-		AddTextToMenu("Alternatively, press enter to use the default texture ID.");
-
-		textureID = TextInput();
-
-		if (textureID.empty())
-		{
-			textureID = "DefaultTexture";
-		}
-
-		AddTextToMenu("Is the sprite animated? (1 for yes, 0 for no): ");
-		animated = std::stoi(TextInput());
-
-		newEntity.addComponent<SpriteComponent>(textureID, animated);
-		AddTextToMenu("Sprite component added.");
+		textureID = "DefaultTexture";
 	}
+
+	AddTextToMenu("Is the sprite animated? (1 for yes, 0 for no): ");
+	animated = GetIntInput();
+
+	AddTextToMenu("Do you want the sprite to be flipped horizontally? (1 for yes, 0 for no): ");
+	bool flipped = GetIntInput();
+
+	AddTextToMenu("Enter the number of frames your sprite animation has: ");
+	int frames = GetIntInput();
+
+	AddTextToMenu("Enter the speed of your sprite animation as an int: ");
+	int speed = GetIntInput();
+
+	newEntity.addComponent<SpriteComponent>(textureID, animated, frames, speed, flipped);
+	AddTextToMenu("Sprite component added.");
+	
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//Prompt to add ColliderComponent
@@ -385,12 +411,12 @@ void DebugMenu::CreateEntity()
 
 	AddTextToMenu("Add a ColliderComponent? (1 for yes, 0 for no): ");
 
-	int addCollider = std::stoi(TextInput());
+	int addCollider = GetIntInput();
 
 	if (addCollider == 1)
 	{
 		std::string colliderTag;
-		AddTextToMenu("Enter collider tag: ");
+		AddTextToMenu("Enter a name for the collider tag: ");
 		colliderTag = TextInput();
 		newEntity.addComponent<ColliderComponent>(colliderTag);
 		AddTextToMenu("Collider component added.");
@@ -402,19 +428,23 @@ void DebugMenu::CreateEntity()
 
 	AddTextToMenu("Add a HealthComponent? (1 for yes, 0 for no): ");
 
-	int addHealth = std::stoi(TextInput());
+	int addHealth = GetIntInput();
 
 	if (addHealth == 1)
 	{
 		int health = 100;
 		bool isPlayer = false;
 		AddTextToMenu("Enter health (int): ");
-		health = std::stoi(TextInput());
-		AddTextToMenu("Is this a player entity? (1 for yes, 0 for no): ");
-		isPlayer = std::stoi(TextInput());
+		health = GetIntInput();
+		if (newEntity.hasGroup(Game::g_groupLabels::Players))
+		{
+			isPlayer = true;
+		}
 		newEntity.addComponent<HealthComponent>(health, isPlayer);
 		AddTextToMenu("Health component added.");
 	}
+
+	AddTextToMenu("Returning to main menu.");
 
 	g_manager.refresh();
 	std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -442,7 +472,7 @@ void DebugMenu::ModifyEntity()
 	}
 
 	AddTextToMenu("Enter the index of the entity to modify: ");
-	int entityIndex = std::stoi(TextInput());
+	int entityIndex = GetIntInput();
 
 	if (entityIndex < 0 || entityIndex >= static_cast<int>(entities.size())) {
 		AddTextToMenu("Invalid entity index.");
@@ -459,7 +489,7 @@ void DebugMenu::ModifyEntity()
 	AddTextToMenu("5: Add missing component");
 	AddTextToMenu("Enter your choice: ");
 
-	int modChoice = std::stoi(TextInput());
+	int modChoice = GetIntInput();
 
 	if (modChoice == 1)
 	{
@@ -473,19 +503,19 @@ void DebugMenu::ModifyEntity()
 			AddTextToMenu("Current Scale: " + std::to_string(tc.m_scale));
 
 			AddTextToMenu("Enter new X position (float): ");
-			float newX = std::stof(TextInput());
+			float newX = GetFloatInput();
 
 			AddTextToMenu("Enter new Y position (float): ");
-			float newY = std::stof(TextInput());
+			float newY = GetFloatInput();
 
 			AddTextToMenu("Enter new width (int): ");
-			int newWidth = std::stoi(TextInput());
+			int newWidth = GetIntInput();
 
 			AddTextToMenu("Enter new height (int): ");
-			int newHeight = std::stoi(TextInput());
+			int newHeight = GetIntInput();
 
 			AddTextToMenu("Enter new scale (float): ");
-			float newScale = std::stof(TextInput());
+			float newScale = GetIntInput();
 
 			tc.m_position.m_x = newX;
 			tc.m_position.m_y = newY;
@@ -516,11 +546,23 @@ void DebugMenu::ModifyEntity()
 
 
 			AddTextToMenu("Is the sprite animated? (1 for yes, 0 for no): ");
-			int isAnimated = std::stoi(TextInput());
+			int isAnimated = GetIntInput();
 			if (isAnimated == 1)
 			{
 				sc.enableAnimation();
 			}
+
+			AddTextToMenu("Do you want the sprite to be flipped horizontally? (1 for yes, 0 for no): ");
+			bool flipped = GetIntInput();
+			sc.setFlip(flipped);
+
+			AddTextToMenu("Enter the number of frames your sprite animation has: ");
+			int frames = GetIntInput();
+			sc.setAnimationFrames(frames);
+
+			AddTextToMenu("Enter the speed of your sprite animation as an int: ");
+			int speed = GetIntInput();
+			sc.setAnimationSpeed(speed);
 
 			AddTextToMenu("Sprite component updated.");
 		}
@@ -554,10 +596,10 @@ void DebugMenu::ModifyEntity()
 			HealthComponent& hc = selectedEntity->getComponent<HealthComponent>();
 
 			AddTextToMenu("Enter new health value: ");
-			int newHealth = std::stoi(TextInput());
+			int newHealth = GetIntInput();
 
 			AddTextToMenu("Make entity a player? (1 for yes, 0 for no): ");
-			bool isPlayer = std::stoi(TextInput());
+			bool isPlayer = GetIntInput();
 
 			hc.setMaxHealth(newHealth);
 			hc.setIfPlayer(isPlayer);
@@ -577,7 +619,7 @@ void DebugMenu::ModifyEntity()
 		AddTextToMenu("3: ColliderComponent");
 		AddTextToMenu("4: HealthComponent");
 
-		int addChoice = std::stoi(TextInput());
+		int addChoice = GetIntInput();
 
 		if (addChoice == 1)
 		{
@@ -588,19 +630,19 @@ void DebugMenu::ModifyEntity()
 			else
 			{
 				AddTextToMenu("Enter X position (float): ");
-				float xPos = std::stof(TextInput());
+				float xPos = GetFloatInput();
 
 				AddTextToMenu("Enter Y position (float): ");
-				float yPos = std::stof(TextInput());
+				float yPos = GetFloatInput();
 
 				AddTextToMenu("Enter height (int): ");
-				int height = std::stoi(TextInput());
+				int height = GetIntInput();
 
 				AddTextToMenu("Enter width (int): ");
-				int width = std::stoi(TextInput());
+				int width = GetIntInput();
 
 				AddTextToMenu("Enter scale (float): ");
-				float scale = std::stof(TextInput());
+				float scale = GetFloatInput();
 
 				selectedEntity->addComponent<TransformComponent>(xPos, yPos, height, width, scale);
 		
@@ -625,7 +667,7 @@ void DebugMenu::ModifyEntity()
 				}
 
 				AddTextToMenu("Is the sprite animated? (1 for yes, 0 for no): ");
-				int animated = std::stoi(TextInput());				
+				int animated = GetIntInput();
 
 				selectedEntity->addComponent<SpriteComponent>(textureID, animated);
 
@@ -657,10 +699,10 @@ void DebugMenu::ModifyEntity()
 			else
 			{
 				AddTextToMenu("Enter health (int): ");
-				int health = std::stoi(TextInput());
+				int health = GetIntInput();
 
 				AddTextToMenu("Is this a player entity? (1 for yes, 0 for no): ");
-				bool isPlayer = std::stoi(TextInput());
+				bool isPlayer = GetIntInput();
 
 				selectedEntity->addComponent<HealthComponent>(health, isPlayer);
 
@@ -672,6 +714,8 @@ void DebugMenu::ModifyEntity()
 	{
 		AddTextToMenu("Invalid modification choice.");
 	}
+
+	AddTextToMenu("Returning to main menu.");
 
 	g_manager.refresh();
 	ClearLogMessages();
@@ -712,69 +756,73 @@ void DebugMenu::ListEntities()
 
 	AddTextToMenu("There are " + std::to_string(unnamedCount) + " other unnamed entities.");
 
+	AddTextToMenu("Returning to main menu.");
+
 	ClearLogMessages();
 
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
-void DebugMenu::AdjustAppeareance()
+void DebugMenu::AdjustAppearance()
 {
 	ClearLogMessages();
 	
 	AddTextToMenu("Adjusting appearance.");
 
 	AddTextToMenu("Do you want to change the text colour? (1 for yes, 0 for no): ");
-	int changeColour = std::stoi(TextInput());
+	int changeColour = GetIntInput();
 
 	if (changeColour == 1)
 	{
 		int r = 0, g = 0, b = 0, a = 0;
 
 		AddTextToMenu("Enter red value (0-255): ");
-		r = std::stoi(TextInput());
+		r = GetIntInput();
 
 		AddTextToMenu("Enter green value (0-255): ");
-		g = std::stoi(TextInput());
+		g = GetIntInput();
 
 		AddTextToMenu("Enter blue value (0-255): ");
-		b = std::stoi(TextInput());
+		b = GetIntInput();
 
 		AddTextToMenu("Enter alpha value (0-255): ");
-		a = std::stoi(TextInput());
+		a = GetIntInput();
 
 		m_normalColour = { static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a) };
 	}
 
 	AddTextToMenu("Do you want to change the highlight colour? (1 for yes, 0 for no): ");
-	int changeHighlight = std::stoi(TextInput());
+	int changeHighlight = GetIntInput();
 
 	if (changeHighlight == 1)
 	{
 		int r = 0, g = 0, b = 0, a = 0;
 
 		AddTextToMenu("Enter red value (0-255): ");
-		r = std::stoi(TextInput());
+		r = GetIntInput();
 
 		AddTextToMenu("Enter green value (0-255): ");
-		g = std::stoi(TextInput());
+		g = GetIntInput();
 
 		AddTextToMenu("Enter blue value (0-255): ");
-		b = std::stoi(TextInput());
+		b = GetIntInput();
 
 		AddTextToMenu("Enter alpha value (0-255): ");
-		a = std::stoi(TextInput());
+		a = GetIntInput();
 
 		m_highlightColour = { static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a) };
 	}
 
 	AddTextToMenu("Do you want to change the font size? (1 for yes, 0 for no): ");	
-	int changeFontSize = std::stoi(TextInput());
+	int changeFontSize = GetIntInput();
 
 	if (changeFontSize == 1)
 	{
 		AddTextToMenu("Enter new font size: ");
-		m_fontSize = std::stoi(TextInput());
+		m_fontSize = GetIntInput();
 	}
+
+	AddTextToMenu("Returnin to main menu.");
 
 	g_manager.refresh();
 	std::this_thread::sleep_for(std::chrono::seconds(2));

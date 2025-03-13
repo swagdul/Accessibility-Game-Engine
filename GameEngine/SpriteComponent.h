@@ -13,8 +13,8 @@ public:
 
 	int m_animationIndex = 0;
 
-	std::map<const char*, Animation> m_animations;
-	//std::map<std::string, Animation> m_animations;
+	//std::map<const char*, Animation> m_animations;
+	std::map<std::string, Animation> m_animations;
 
 	SDL_RendererFlip m_spriteFlip = SDL_FLIP_NONE;
 
@@ -42,6 +42,9 @@ public:
 	SpriteComponent(std::string textureId, bool isAnimated, int frames, int speed, bool isFlipped)
 	{
 		m_isAnimated = isAnimated;
+		m_isFlipped = isFlipped;
+		m_speed = speed;
+		m_frames = frames;
 
 		Animation idle = Animation(0, frames, speed);
 		Animation walk = Animation(1, frames, speed);
@@ -86,8 +89,17 @@ public:
 	{
 		m_transform = &m_entity->getComponent<TransformComponent>();
 
-		m_srcRect = { 0, 0, m_transform->m_width, m_transform->m_height };
-		m_destRect = { 64, 64, 128, 128 };
+		if (m_srcRect.w == 0 || m_srcRect.h == 0)
+		{
+			m_srcRect = { 0, 0, m_transform->m_width, m_transform->m_height };
+		}
+
+		if (m_destRect.w == 0 || m_destRect.h == 0)
+		{
+			m_destRect = { 64, 64,
+						   static_cast<int>(m_transform->m_width * m_transform->m_scale),
+						   static_cast<int>(m_transform->m_height * m_transform->m_scale) };
+		}
 	}
 
 	void update() override
@@ -112,9 +124,47 @@ public:
 
 	void PlayAnimation(const char* animationName)
 	{
-		m_frames = m_animations[animationName].m_frames;
-		m_animationIndex = m_animations[animationName].m_index;
-		m_speed = m_animations[animationName].m_speed;
+		//m_frames = m_animations[animationName].m_frames;
+		//m_animationIndex = m_animations[animationName].m_index;
+		//m_speed = m_animations[animationName].m_speed;
+
+		auto it = m_animations.find(animationName);
+		if (it != m_animations.end())
+		{
+			m_frames = it->second.m_frames;
+			m_animationIndex = it->second.m_index;
+			m_speed = it->second.m_speed;
+		}
+	}
+
+	int getAnimatiomFrames()
+	{
+		return m_frames;
+	}
+
+	void setAnimationFrames(int frames)
+	{
+		m_frames = frames;
+	}
+
+	int getAnimationSpeed()
+	{
+		return m_speed;
+	}
+
+	void setAnimationSpeed(int speed)
+	{
+		m_speed = speed;
+	}
+
+	bool isFlipped()
+	{
+		return m_isFlipped;
+	}
+
+	void setFlip(bool flip)
+	{
+		m_isFlipped = flip;
 	}
 
 private:
@@ -125,6 +175,7 @@ private:
 	bool m_isAnimated = false;
 	int m_frames = 0;
 	int m_speed = 100;
+	bool m_isFlipped;
 
 	std::string m_textureID;
 

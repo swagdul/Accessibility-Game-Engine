@@ -31,6 +31,8 @@ void ScreenReader::Speak(const std::wstring& text)
 	hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, reinterpret_cast<void**>(&pVoice));
 	if (SUCCEEDED(hr) && pVoice != nullptr)
 	{
+		pVoice->SetRate(3);
+
 		hr = pVoice->Speak(text.c_str(), SPF_DEFAULT, NULL);
 		if (FAILED(hr)) {
 			std::wcerr << L"ScreenReader: Failed to speak text." << std::endl;

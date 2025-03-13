@@ -36,7 +36,10 @@ json SerialiseEntity(Entity* entity)
 		j["sprite"] =
 		{
 			{"textureID", sc.getTextureID()},
-			{"animated", sc.isAnimated()}
+			{"animated", sc.isAnimated()},
+			{"frames", sc.getAnimatiomFrames()},
+			{"speed", sc.getAnimationSpeed()},
+			{"flipped", sc.isFlipped()}
 		};
 	}
 
@@ -62,6 +65,17 @@ json SerialiseEntity(Entity* entity)
 		};
 	}
 
+	json groups = json::array();
+	constexpr std::size_t maxGroups = 32;
+	for (size_t i = 0; i < maxGroups; i++)
+	{
+		if (entity->hasGroup(i))
+		{
+			groups.push_back(i);
+		}
+	}
+	j["groups"] = groups;
+
 	return j;
 }
 
@@ -71,7 +85,10 @@ void SaveEntities(const std::vector<Entity*>& entities, const std::string& filen
 
 	for (auto& entity : entities)
 	{
-		jEntities.push_back(SerialiseEntity(entity));
+		if (entity->isDebugCreated())
+		{
+			jEntities.push_back(SerialiseEntity(entity));
+		}
 	}
 
 	std::ofstream ofs(filename);
@@ -92,6 +109,8 @@ void DeserialiseEntity(const json& j)
 	std::string name = j.value("name", "Unnamed");
 	e.setName(name);
 
+	e.setDebugCreated(true);
+
 	if (j.contains("transform"))
 	{
 		json jTransform = j["transform"];
@@ -100,7 +119,7 @@ void DeserialiseEntity(const json& j)
 		int width = jTransform.value("width", 128);
 		int height = jTransform.value("height", 128);
 		float scale = jTransform.value("scale", 1.0f);
-		e.addComponent<TransformComponent>(x, y, width, height, scale);
+		e.addComponent<TransformComponent>(x, y, height, width, scale);
 	}
 
 	if (j.contains("sprite"))
@@ -108,7 +127,10 @@ void DeserialiseEntity(const json& j)
 		json jSprite = j["sprite"];
 		std::string textureID = jSprite.value("textureID", "DefaultTexture");
 		bool animated = jSprite.value("animated", false);
-		e.addComponent<SpriteComponent>(textureID, animated);
+		int frames = jSprite.value("frames", 7); 
+		int speed = jSprite.value("speed", 100);     
+		bool flipped = jSprite.value("flipped", false);
+		e.addComponent<SpriteComponent>(textureID, animated, frames, speed, flipped);
 	}
 
 	if (j.contains("health"))
@@ -127,6 +149,15 @@ void DeserialiseEntity(const json& j)
 		json jCollider = j["collider"];
 		std::string tag = jCollider.value("tag", "");
 		e.addComponent<ColliderComponent>(tag);
+	}
+
+	if (j.contains("groups"))
+	{
+		for (auto& group : j["groups"])
+		{
+			int groupIndex = group.get<int>();
+			e.addGroup(groupIndex);
+		}
 	}
 }
 

@@ -112,6 +112,16 @@ public:
 		return m_name;
 	}
 
+	void setDebugCreated(bool created)
+	{
+		m_debugCreated = created;
+	}
+
+	bool isDebugCreated() const
+	{
+		return m_debugCreated;
+	}
+
 private:
 	Manager& m_manager;
 
@@ -124,6 +134,8 @@ private:
 	GroupBitSet m_groupBitSet;
 
 	std::string m_name;
+
+	bool m_debugCreated = false;
 };
 
 class Manager

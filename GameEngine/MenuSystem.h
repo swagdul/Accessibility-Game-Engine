@@ -23,6 +23,7 @@ private:
 	std::vector<SDL_Rect> m_menuPositions;
 	std::vector<bool> m_selected;
 	SDL_Color m_menuColours[2] = { {255, 255, 255}, {255, 0, 0} };
+	int m_selectedIndex;
 
 	void RenderMenu();
 	void Cleanup();

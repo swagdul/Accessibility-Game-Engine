@@ -24,6 +24,8 @@ public:
 	void AddLogMessage(const std::string& message);
 	void ClearLogMessages();
 	std::string TextInput();
+	int GetIntInput();
+	float GetFloatInput();
 	void AddTextToMenu(std::string text);
 	void Run();
 
@@ -48,6 +50,6 @@ private:
 	void CreateEntity();
 	void ModifyEntity();
 	void ListEntities();
-	void AdjustAppeareance();
+	void AdjustAppearance();
 };
 

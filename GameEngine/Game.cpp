@@ -129,6 +129,7 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 
 	SDL_Colour white = { 255, 255, 255, 255 };
 	label.addComponent<UILabel>(10, 10, "Label", "Arial", white);
+	label.getComponent<UILabel>().SetLabelText("Press F1 to open Accessibility Menu", "Arial");
 
 	m_assets->CreateProjectile(Vector2D(500, 500), Vector2D(2, 0), 200, 2, "Projectile");
 
@@ -166,9 +167,9 @@ void Game::update()
 	SDL_Rect playerCollider = player.getComponent<ColliderComponent>().m_collider;
 	Vector2D playerPosition = player.getComponent<TransformComponent>().m_position;
 
-	std::stringstream stringStream;
-	stringStream << "Player position: " << playerPosition;
-	label.getComponent<UILabel>().SetLabelText(stringStream.str(), "Arial");
+	//std::stringstream stringStream;
+	//stringStream << "Player position: " << playerPosition;
+	//label.getComponent<UILabel>().SetLabelText(stringStream.str(), "Arial");
 
 	g_manager.refresh();
 	g_manager.update();
