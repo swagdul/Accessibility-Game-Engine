@@ -1,1 +1,30 @@
-[]
+[
+    {
+        "collider": {
+            "tag": "skeleton"
+        },
+        "groups": [
+            0
+        ],
+        "health": {
+            "current": 100,
+            "max": 100,
+            "player": false
+        },
+        "name": "Skeleton#2",
+        "sprite": {
+            "animated": true,
+            "flipped": true,
+            "frames": 7,
+            "speed": 100,
+            "textureID": "Skeleton Archer"
+        },
+        "transform": {
+            "height": 64,
+            "scale": 2.0,
+            "width": 128,
+            "x": 250.0,
+            "y": 300.0
+        }
+    }
+]

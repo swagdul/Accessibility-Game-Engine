@@ -9,7 +9,7 @@ public:
 
 	SDL_Texture* m_texture;
 	SDL_Rect m_srcRect, m_destRect;
-	Vector2D m_postion;
+	Vector2D m_position;
 
 	TileComponent() = default;
 
@@ -22,8 +22,8 @@ public:
 	{
 		m_texture = Game::m_assets->GetTexture(textureId);
 
-		m_postion.m_x = static_cast<int>(xPos);
-		m_postion.m_y = static_cast<int>(yPos);
+		m_position.m_x = static_cast<int>(xPos);
+		m_position.m_y = static_cast<int>(yPos);
 
 		m_srcRect.x = srcX;
 		m_srcRect.y = srcY;
@@ -38,8 +38,8 @@ public:
 
 	void update() override
 	{
-		m_destRect.x = m_postion.m_x - Game::m_camera.x;
-		m_destRect.y = m_postion.m_y - Game::m_camera.y;
+		m_destRect.x = m_position.m_x - Game::m_camera.x;
+		m_destRect.y = m_position.m_y - Game::m_camera.y;
 	}
 
 	void draw() override
