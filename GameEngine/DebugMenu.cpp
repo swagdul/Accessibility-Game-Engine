@@ -20,6 +20,7 @@ DebugMenu::DebugMenu(Game* game, SDL_Renderer* renderer)
 	m_menuOptions.push_back("List Entities");
 	m_menuOptions.push_back("Create Entities");
 	m_menuOptions.push_back("Modify Entities");
+	m_menuOptions.push_back("Delete Entities");
 	m_menuOptions.push_back("Adjust Appearance");
 	m_menuOptions.push_back("Exit Menu");
 
@@ -207,6 +208,10 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 			else if (m_menuOptions[m_selectedIndex] == "Modify Entities")
 			{
 				ModifyEntity();
+			}
+			else if (m_menuOptions[m_selectedIndex] == "Delete Entities")
+			{
+				DeleteEntity();
 			}
 			else if (m_menuOptions[m_selectedIndex] == "Adjust Appearance")
 			{
@@ -829,6 +834,63 @@ void DebugMenu::AdjustAppearance()
 	ClearLogMessages();
 }
 
+void DebugMenu::DeleteEntity()
+{
+	ClearLogMessages();
+
+	std::vector<Entity*> entities = g_manager.getEntities();
+
+	if (entities.empty())
+	{
+		AddTextToMenu("No entities available to delete.");
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+		return;
+	}
+
+	AddTextToMenu("Available entities:");
+	for (size_t i = 0; i < entities.size(); i++) {
+
+		std::string entityName = entities[i]->getName();
+		if (entityName.empty() || entityName == "Unnamed")
+		{
+			AddTextToMenu("Entity " + std::to_string(i));
+		}
+		else
+		{
+			AddTextToMenu("Entity " + std::to_string(i) + ": " + entityName);
+		}
+	}
+
+	AddTextToMenu("Enter the index of the entity to delete: ");
+
+	int entityIndex = GetIntInput();
+	if (entityIndex < 0 || entityIndex >= static_cast<int>(entities.size())) {
+		AddTextToMenu("Invalid entity index.");
+		return;
+	}
+
+	if (entityIndex < 0 || entityIndex >= static_cast<int>(entities.size()))
+	{
+		AddTextToMenu("Invalid index. No entity deleted.");
+		ScreenReader::Speak("Invalid index. No entity deleted.");
+	}
+	else
+	{
+		entities[entityIndex]->destroy();
+		AddTextToMenu("Entity " + std::to_string(entityIndex) + " deleted.");
+		ScreenReader::Speak("Entity deleted.");
+	}
+
+	Entity* selectedEntity = entities[entityIndex];
+	selectedEntity->destroy();
+
+	AddTextToMenu("Entity deleted.");
+
+	g_manager.refresh();
+
+	std::this_thread::sleep_for(std::chrono::seconds(2));
+	ClearLogMessages();
+}
 
 
 

@@ -51,5 +51,6 @@ private:
 	void ModifyEntity();
 	void ListEntities();
 	void AdjustAppearance();
+	void DeleteEntity();
 };
 
