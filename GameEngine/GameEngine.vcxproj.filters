@@ -51,7 +51,7 @@
     <ClCompile Include="ScreenReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DebugMenu.cpp">
+    <ClCompile Include="AccessibilityMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SaveLoad.cpp">
@@ -116,7 +116,7 @@
     <ClInclude Include="ScreenReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DebugMenu.h">
+    <ClInclude Include="AccessibilityMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HealthComponent.h">

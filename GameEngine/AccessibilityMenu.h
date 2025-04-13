@@ -5,7 +5,7 @@
 #include "Game.h"
 #include "ScreenReader.h"
 
-enum class DebugMenuState
+enum class AccessibilityMenuState
 {
 	MainMenu,
 	ListEntities,
@@ -14,12 +14,12 @@ enum class DebugMenuState
 	AdjustAppearance
 };
 
-class DebugMenu
+class AccessibilityMenu
 {
 public:
 
-	DebugMenu(Game* game, SDL_Renderer* renderer);
-	~DebugMenu();
+	AccessibilityMenu(Game* game, SDL_Renderer* renderer);
+	~AccessibilityMenu();
 
 	void AddLogMessage(const std::string& message);
 	void ClearLogMessages();
@@ -34,7 +34,7 @@ private:
 	SDL_Renderer* m_renderer;
 	bool m_isRunning;
 	int m_selectedIndex;
-	DebugMenuState m_state;
+	AccessibilityMenuState m_state;
 
 	int m_fontSize;
 	SDL_Color m_normalColour;

@@ -1,4 +1,4 @@
-#include "DebugMenu.h"
+#include "AccessibilityMenu.h"
 #include "ECS.h"
 #include "Components.h"
 #include "TextRenderer.h"
@@ -10,8 +10,8 @@
 
 extern Manager g_manager;
 
-DebugMenu::DebugMenu(Game* game, SDL_Renderer* renderer)
-	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0), m_state(DebugMenuState::MainMenu), m_fontSize(24)
+AccessibilityMenu::AccessibilityMenu(Game* game, SDL_Renderer* renderer)
+	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0), m_state(AccessibilityMenuState::MainMenu), m_fontSize(24)
 {
 
 	m_normalColour = { 255, 255, 255, 255 };
@@ -27,12 +27,12 @@ DebugMenu::DebugMenu(Game* game, SDL_Renderer* renderer)
 	ScreenReader::Speak(m_menuOptions[m_selectedIndex]);
 }
 
-DebugMenu::~DebugMenu()
+AccessibilityMenu::~AccessibilityMenu()
 {
 	ClearLogMessages();
 }
 
-void DebugMenu::AddLogMessage(const std::string& message)
+void AccessibilityMenu::AddLogMessage(const std::string& message)
 {
 	m_logMessages.push_back(message);
 
@@ -42,12 +42,12 @@ void DebugMenu::AddLogMessage(const std::string& message)
 	}
 }
 
-void DebugMenu::ClearLogMessages()
+void AccessibilityMenu::ClearLogMessages()
 {
 	m_logMessages.clear();
 }
 
-std::string DebugMenu::TextInput()
+std::string AccessibilityMenu::TextInput()
 {
 	SDL_StartTextInput();
 	std::string textInput;
@@ -55,7 +55,7 @@ std::string DebugMenu::TextInput()
 
 	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", m_fontSize);
 	if (!font) {
-		std::cerr << "DebugMenu::TextInput: Failed to load font: " << TTF_GetError() << std::endl;
+		std::cerr << "AccessibilityMenu::TextInput: Failed to load font: " << TTF_GetError() << std::endl;
 		return "";
 	}
 
@@ -110,7 +110,7 @@ std::string DebugMenu::TextInput()
 	return textInput;
 }
 
-int DebugMenu::GetIntInput() {
+int AccessibilityMenu::GetIntInput() {
 	std::string input = TextInput(); 
 	try {
 		return std::stoi(input);
@@ -121,7 +121,7 @@ int DebugMenu::GetIntInput() {
 	}
 }
 
-float DebugMenu::GetFloatInput() {
+float AccessibilityMenu::GetFloatInput() {
 	std::string input = TextInput();
 	try {
 		return std::stof(input);
@@ -132,7 +132,7 @@ float DebugMenu::GetFloatInput() {
 	}
 }
 
-void DebugMenu::AddTextToMenu(std::string text)
+void AccessibilityMenu::AddTextToMenu(std::string text)
 {
 	AddLogMessage(text);
 	RenderSubMenu();
@@ -140,7 +140,7 @@ void DebugMenu::AddTextToMenu(std::string text)
 	ScreenReader::Speak(text);
 }
 
-void DebugMenu::Run()
+void AccessibilityMenu::Run()
 {
 	SDL_Event event;
 
@@ -154,7 +154,7 @@ void DebugMenu::Run()
 	}
 }
 
-void DebugMenu::HandleEvent(SDL_Event& event)
+void AccessibilityMenu::HandleEvent(SDL_Event& event)
 {
 	if (event.type == SDL_QUIT)
 	{
@@ -201,9 +201,9 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 			}
 			else if (m_menuOptions[m_selectedIndex] == "Create Entities")
 			{
-				m_state = DebugMenuState::CreateEntity;
+				m_state = AccessibilityMenuState::CreateEntity;
 				CreateEntity();
-				m_state = DebugMenuState::MainMenu;
+				m_state = AccessibilityMenuState::MainMenu;
 			}
 			else if (m_menuOptions[m_selectedIndex] == "Modify Entities")
 			{
@@ -232,7 +232,7 @@ void DebugMenu::HandleEvent(SDL_Event& event)
 	}
 }
 
-void DebugMenu::RenderMainMenu()
+void AccessibilityMenu::RenderMainMenu()
 {
 	int windowWidth = 0, windowHeight = 0;
 	SDL_GetRendererOutputSize(m_renderer, &windowWidth, &windowHeight);
@@ -243,7 +243,7 @@ void DebugMenu::RenderMainMenu()
 
 	TTF_Font* font = TTF_OpenFont("Assets/arial.ttf", m_fontSize);
 	if (!font) {
-		std::cerr << "DebugMenu::Render: Failed to load font: " << TTF_GetError() << std::endl;
+		std::cerr << "AccessibilityMenu::Render: Failed to load font: " << TTF_GetError() << std::endl;
 		return;
 	}
 
@@ -282,7 +282,7 @@ void DebugMenu::RenderMainMenu()
 	TTF_CloseFont(font);
 }
 
-void DebugMenu::RenderSubMenu()
+void AccessibilityMenu::RenderSubMenu()
 {
 	int windowWidth = 0, windowHeight = 0;
 	SDL_GetRendererOutputSize(m_renderer, &windowWidth, &windowHeight);
@@ -307,7 +307,7 @@ void DebugMenu::RenderSubMenu()
 	TTF_CloseFont(smallFont);
 }
 
-void DebugMenu::CreateEntity()
+void AccessibilityMenu::CreateEntity()
 {
 	ClearLogMessages();
 
@@ -456,7 +456,7 @@ void DebugMenu::CreateEntity()
 	ClearLogMessages();
 }
 
-void DebugMenu::ModifyEntity()
+void AccessibilityMenu::ModifyEntity()
 {
 	ClearLogMessages();
 	std::vector<Entity*> entities = g_manager.getEntities();
@@ -727,7 +727,7 @@ void DebugMenu::ModifyEntity()
 }
 
 
-void DebugMenu::ListEntities()
+void AccessibilityMenu::ListEntities()
 {
 	ClearLogMessages();
 	std::vector<Entity*> entites = g_manager.getEntities();
@@ -768,7 +768,7 @@ void DebugMenu::ListEntities()
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
-void DebugMenu::AdjustAppearance()
+void AccessibilityMenu::AdjustAppearance()
 {
 	ClearLogMessages();
 	
@@ -834,7 +834,7 @@ void DebugMenu::AdjustAppearance()
 	ClearLogMessages();
 }
 
-void DebugMenu::DeleteEntity()
+void AccessibilityMenu::DeleteEntity()
 {
 	ClearLogMessages();
 

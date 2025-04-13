@@ -7,7 +7,7 @@
 #include "AssetManager.h"
 #include "AccessibilityManager.h"
 #include "MenuSystem.h"
-#include "DebugMenu.h"
+#include "AccessibilityMenu.h"
 #include "SaveLoad.h"
 #include <sstream>
 
@@ -147,8 +147,8 @@ void Game::handleEvents()
 	SDL_PollEvent(&m_event);
 
 	if (m_event.type == SDL_KEYDOWN && m_event.key.keysym.sym == SDLK_F1) {
-		DebugMenu debugMenu(this, m_renderer);
-		debugMenu.Run();
+		AccessibilityMenu accessibilityMenu(this, m_renderer);
+		accessibilityMenu.Run();
 	}
 
 	switch (m_event.type)
