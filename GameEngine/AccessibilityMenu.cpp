@@ -827,7 +827,7 @@ void AccessibilityMenu::AdjustAppearance()
 		m_fontSize = GetIntInput();
 	}
 
-	AddTextToMenu("Returnin to main menu.");
+	AddTextToMenu("Returning to main menu.");
 
 	g_manager.refresh();
 	std::this_thread::sleep_for(std::chrono::seconds(2));
