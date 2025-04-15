@@ -849,15 +849,9 @@ void AccessibilityMenu::DeleteEntity()
 
 	AddTextToMenu("Available entities:");
 	for (size_t i = 0; i < entities.size(); i++) {
-
-		std::string entityName = entities[i]->getName();
-		if (entityName.empty() || entityName == "Unnamed")
+		if (entities[i]->getName() != "Unnamed")
 		{
-			AddTextToMenu("Entity " + std::to_string(i));
-		}
-		else
-		{
-			AddTextToMenu("Entity " + std::to_string(i) + ": " + entityName);
+			AddTextToMenu("Entity " + std::to_string(i) + ": " + entities[i]->getName());
 		}
 	}
 
