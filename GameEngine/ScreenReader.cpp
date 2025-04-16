@@ -1,13 +1,16 @@
 #include "ScreenReader.h"
-#include <sapi.h>
 #include <iostream>
 #include <string>
-#include <Windows.h>
 
+//Windows
+#ifdef _WIN32
+#include <Windows.h>
+#include <sapi.h>
 #pragma warning(push)
 #pragma warning(disable:4996)
 #include <sphelper.h>
 #pragma warning(pop)
+
 
 static std::wstring StringToWString(const std::string& string)
 {
@@ -51,3 +54,26 @@ void ScreenReader::Speak(const std::string& text)
 {
 	Speak(StringToWString(text));
 }
+
+#else
+//macOS//Linux
+#include <cstdlib>
+
+void ScreenReader::Speak(const std::wstring& text)
+{
+	std::string utf8Text(text.begin(), text.end());
+	Speak(utf8Text);
+}
+
+void ScreenReader::Speak(const std::string& text)
+{
+	std::string command = "espeak \"" + text + "\"";
+	int result = system(command.c_str());
+
+	if (result != 0)
+	{
+		std::cerr << "ScreenReader: Failed to execute espeak command." << std::endl;
+	}
+}
+
+#endif

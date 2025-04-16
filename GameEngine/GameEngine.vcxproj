@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="AccessibilityManager.h" />
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="AppearanceSettings.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="Collision.h" />

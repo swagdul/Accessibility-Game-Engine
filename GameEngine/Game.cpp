@@ -89,8 +89,6 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 
 	TTF_CloseFont(font);
 
-	//AccessibilityManager::EnableHighContrastMode(true);
-
 	m_assets->AddTexture("Terrain", "Assets/Maps/Dungeon_Tileset.png");
 	m_assets->AddTexture("Player", "Assets/Shinobi/Shinobi_Animations.png");
 	m_assets->AddTexture("Skeleton", "Assets/Skeleton/Idle.png");
@@ -100,7 +98,9 @@ void Game::init(const char* title, int xPos, int yPos, int width, int height, bo
 
 	m_assets->AddFont("Arial", "Assets/Arial.ttf", AccessibilityManager::GetFontSize());
 
-	g_map = new Map("Terrain", 4, 16);
+	//g_map = new Map("Terrain", 4, 16);
+
+	g_map = new Map("Terrain", 2, 16);
 
 	g_map->LoadMap("Assets/map.map", 25, 20);
 

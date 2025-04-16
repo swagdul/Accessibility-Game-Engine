@@ -38,6 +38,23 @@ public:
 
 		setTexture(textureId);
 	}	
+
+	SpriteComponent(std::string textureId, bool isAnimated, bool isFlipped)
+	{
+		m_isAnimated = isAnimated;
+
+		Animation idle = Animation(0, 6, 100);
+		Animation walk = Animation(1, 8, 100);
+
+		m_animations.emplace("Idle", idle);
+		m_animations.emplace("Walk", walk);
+
+		PlayAnimation("Idle");
+
+		setTexture(textureId);
+
+		m_spriteFlip = isFlipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+	}
 	
 	SpriteComponent(std::string textureId, bool isAnimated, int frames, int speed, bool isFlipped)
 	{

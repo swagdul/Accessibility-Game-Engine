@@ -128,5 +128,8 @@
     <ClInclude Include="SaveLoad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AppearanceSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

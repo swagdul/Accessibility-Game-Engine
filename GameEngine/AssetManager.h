@@ -15,8 +15,6 @@ public:
 	~AssetManager();
 
 	void CreateProjectile(Vector2D position, Vector2D velocity, int range, int speed, std::string textureId);
-	void CreatePlayer(Vector2D position, int width, int height, float scale, std::string textureId);
-	void CreateEnemy(Vector2D position, int width, int height, float scale, std::string textureId, std::string name);
 
 	void AddTexture(std::string id, const char* filePath);
 	SDL_Texture* GetTexture(std::string id);

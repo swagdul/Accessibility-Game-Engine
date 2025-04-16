@@ -2,6 +2,7 @@
 #include "ECS.h"
 #include "Components.h"
 #include "TextRenderer.h"
+#include "AppearanceSettings.h"
 #include <SDL_ttf.h>
 #include <iostream>
 #include <sstream>
@@ -11,11 +12,11 @@
 extern Manager g_manager;
 
 AccessibilityMenu::AccessibilityMenu(Game* game, SDL_Renderer* renderer)
-	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0), m_state(AccessibilityMenuState::MainMenu), m_fontSize(24)
+	: m_game(game), m_renderer(renderer), m_isRunning(true), m_selectedIndex(0), m_state(AccessibilityMenuState::MainMenu), m_fontSize(AppearanceSettings::Get().fontSize)
 {
 
-	m_normalColour = { 255, 255, 255, 255 };
-	m_highlightColour = { 255, 0, 0, 255 };
+	m_normalColour = AppearanceSettings::Get().normalColour;
+	m_highlightColour = AppearanceSettings::Get().highlightColour;
 
 	m_menuOptions.push_back("List Entities");
 	m_menuOptions.push_back("Create Entities");
@@ -400,14 +401,31 @@ void AccessibilityMenu::CreateEntity()
 	AddTextToMenu("Do you want the sprite to be flipped horizontally? (1 for yes, 0 for no): ");
 	bool flipped = GetIntInput();
 
-	AddTextToMenu("Enter the number of frames your sprite animation has: ");
-	int frames = GetIntInput();
+	if (animated)
+	{
+		if (textureID == "DefaultTexture")
+		{
+			newEntity.addComponent<SpriteComponent>(textureID, animated, 6, 100, flipped);
+			AddTextToMenu("Sprite component added.");
+		}
+		else
+		{
+			AddTextToMenu("Enter the number of frames your sprite animation has: ");
+			int frames = GetIntInput();
 
-	AddTextToMenu("Enter the speed of your sprite animation as an int: ");
-	int speed = GetIntInput();
+			AddTextToMenu("Enter the speed of your sprite animation as an int: ");
+			int speed = GetIntInput();
 
-	newEntity.addComponent<SpriteComponent>(textureID, animated, frames, speed, flipped);
-	AddTextToMenu("Sprite component added.");
+			newEntity.addComponent<SpriteComponent>(textureID, animated, frames, speed, flipped);
+			AddTextToMenu("Sprite component added.");
+		}
+	}
+	else
+	{
+		newEntity.addComponent<SpriteComponent>(textureID, animated, flipped);
+		AddTextToMenu("Sprite component added.");
+	}
+
 	
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -770,6 +788,10 @@ void AccessibilityMenu::ListEntities()
 
 void AccessibilityMenu::AdjustAppearance()
 {
+	m_normalColour = AppearanceSettings::Get().normalColour;
+	m_highlightColour = AppearanceSettings::Get().highlightColour;
+	m_fontSize = AppearanceSettings::Get().fontSize;
+
 	ClearLogMessages();
 	
 	AddTextToMenu("Adjusting appearance.");
@@ -877,6 +899,10 @@ void AccessibilityMenu::DeleteEntity()
 
 	Entity* selectedEntity = entities[entityIndex];
 	selectedEntity->destroy();
+
+	AppearanceSettings::Get().normalColour = m_normalColour;
+	AppearanceSettings::Get().highlightColour = m_highlightColour;
+	AppearanceSettings::Get().fontSize = m_fontSize;
 
 	AddTextToMenu("Entity deleted.");
 

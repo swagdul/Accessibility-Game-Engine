@@ -2,6 +2,7 @@
 #include "ECS.h"
 #include "Game.h"
 #include "Components.h"
+#include "AppearanceSettings.h"
 #include <fstream>
 #include <iostream>
 #include "json.hpp"
@@ -91,14 +92,27 @@ void SaveEntities(const std::vector<Entity*>& entities, const std::string& filen
 		}
 	}
 
+	json appearance;
+	SDL_Color normal = AppearanceSettings::Get().normalColour;
+	SDL_Color highlight = AppearanceSettings::Get().highlightColour;
+	int fontSize = AppearanceSettings::Get().fontSize;
+
+	appearance["normal"] = { {"r", normal.r}, {"g", normal.g}, {"b", normal.b}, {"a", normal.a} };
+	appearance["highlight"] = { {"r", highlight.r}, {"g", highlight.g}, {"b", highlight.b}, {"a", highlight.a} };
+	appearance["fontSize"] = fontSize;
+
+	json jSave;
+	jSave["entities"] = jEntities;
+	jSave["appearance"] = appearance;
+
 	std::ofstream ofs(filename);
 	if (!ofs.is_open())
 	{
 		std::cerr << "Failed to open file for writing: " << filename << std::endl;
 		return;
-	}	
+	}
 
-	ofs << jEntities.dump(4);
+	ofs << jSave.dump(4);
 	ofs.close();
 	std::cout << "Entities saved to: " << filename << std::endl;
 }
@@ -171,15 +185,43 @@ void LoadEntities(const std::string& filename)
 		return;
 	}
 
-	json jEntities;
-	ifs >> jEntities;
+	json jSave;
+	ifs >> jSave;
 	ifs.close();
 
-	for (auto& j : jEntities)
-	{
-		DeserialiseEntity(j);
-	}	
 
-	std::cout << "Entities loaded from: " << filename << std::endl;
+	if (jSave.contains("entities"))
+	{
+		for (auto& j : jSave["entities"])
+		{
+			DeserialiseEntity(j);
+		}
+	}
+
+	if (jSave.contains("appearance")) 
+	{
+		json app = jSave["appearance"];
+
+		if (app.contains("normal")) 
+		{
+			AppearanceSettings::Get().normalColour.r = app["normal"].value("r", 255);
+			AppearanceSettings::Get().normalColour.g = app["normal"].value("g", 255);
+			AppearanceSettings::Get().normalColour.b = app["normal"].value("b", 255);
+			AppearanceSettings::Get().normalColour.a = app["normal"].value("a", 255);
+		}
+
+		if (app.contains("highlight")) 
+		{
+			AppearanceSettings::Get().highlightColour.r = app["highlight"].value("r", 255);
+			AppearanceSettings::Get().highlightColour.g = app["highlight"].value("g", 0);
+			AppearanceSettings::Get().highlightColour.b = app["highlight"].value("b", 0);
+			AppearanceSettings::Get().highlightColour.a = app["highlight"].value("a", 255);
+		}
+
+		AppearanceSettings::Get().fontSize = app.value("fontSize", 24);
+
+	}
+
+	std::cout << "Entities  and appearance settings loaded from: " << filename << std::endl;
 }
 
